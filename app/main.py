@@ -108,13 +108,14 @@ def get_document(doc_id: int, with_stats: bool = False, db: Session = Depends(ge
     """Информация о конкретном документе"""
     doc = db.query(Document).filter(Document.id == doc_id).first()
     if not doc:
-        raise HTTPException(404, "Документ не найден")
-    
-    response = DocumentResponse.from_orm(doc)
-    
+        raise HTTPException(status_code=404, detail="Документ не найден")
+
+    # Используем model_validate вместо from_orm
+    response = DocumentResponse.model_validate(doc)
+
     if with_stats:
         response.stats = SearchEngine.get_document_stats(db, doc_id)
-    
+
     return response
 
 
