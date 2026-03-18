@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Corpus Manager</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <h1>Corpus Manager</h1>
+    </header>
+
+    <main>
+        <section id="upload-section">
+            <h2>Загрузить документ</h2>
+            <form id="upload-form">
+                <input type="file" id="file-input" accept=".txt,.rtf,.pdf,.docx" required>
+                <label for="meta-input">Метаданные (JSON, опционально):</label>
+                <textarea id="meta-input" placeholder='{"author": "Пушкин", "year": 1833}'></textarea>
+                <button type="submit">Загрузить</button>
+            </form>
+            <div id="upload-result"></div>
+        </section>
+
+        <hr>
+
+        <section id="search-section">
+            <h2>Поиск по корпусу</h2>
+            <form id="search-form">
+                <input type="text" id="query-input" placeholder="Введите слово или лемму..." required>
+                <select id="query-type-select">
+                    <option value="lemma">По лемме</option>
+                    <option value="word_form">По словоформе</option>
+                    <option value="pos">По части речи</option>
+                </select>
+                <label>Контекст: <input type="number" id="context-window" value="3" min="0" max="20"></label>
+                <label>Лимит: <input type="number" id="result-limit" value="10" min="1" max="500"></label>
+                <button type="submit">Найти</button>
+            </form>
+            <div id="search-results">
+                <!-- Результаты будут отображаться здесь -->
+            </div>
+        </section>
+
+        <hr>
+
+        <section id="documents-section">
+            <h2>Документы в корпусе</h2>
+            <button id="refresh-docs-btn">Обновить список</button>
+            <ul id="documents-list">
+                <!-- Список документов будет сюда -->
+            </ul>
+        </section>
+
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
