@@ -1,4 +1,3 @@
-/* ===== Сброс и базовые стили ===== */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -30,7 +29,6 @@ body {
     margin: 0;
 }
 
-/* ===== Header ===== */
 header {
     background: var(--card-bg);
     border-bottom: 1px solid var(--border);
@@ -63,7 +61,6 @@ nav a.active {
     color: white;
 }
 
-/* ===== Main Layout ===== */
 main {
     max-width: 1200px;
     margin: 2rem auto;
@@ -73,7 +70,6 @@ main {
     gap: 1.5rem;
 }
 
-/* ===== Cards ===== */
 .card,
 .stats-card {
     background: var(--card-bg);
@@ -91,7 +87,6 @@ main {
     padding-bottom: 0.75rem;
 }
 
-/* ===== Stats Grid ===== */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -116,7 +111,6 @@ main {
     color: var(--text-muted);
 }
 
-/* ===== Forms ===== */
 .form-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -165,7 +159,6 @@ textarea {
     resize: vertical;
 }
 
-/* ===== Buttons ===== */
 .btn {
     padding: 0.75rem 1.5rem;
     border: none;
@@ -224,7 +217,6 @@ textarea {
     font-size: 0.875rem;
 }
 
-/* ===== Section Header ===== */
 .section-header {
     display: flex;
     justify-content: space-between;
@@ -245,7 +237,6 @@ textarea {
     gap: 0.5rem;
 }
 
-/* ===== Results ===== */
 .results-container {
     margin-top: 1rem;
 }
@@ -270,7 +261,6 @@ textarea {
     color: var(--text-muted);
 }
 
-/* ===== Documents List ===== */
 .documents-list {
     list-style: none;
     display: flex;
@@ -314,7 +304,6 @@ textarea {
     display: none;
 }
 
-/* ===== Pagination ===== */
 .pagination {
     display: flex;
     justify-content: center;
@@ -327,7 +316,6 @@ textarea {
     font-weight: 500;
 }
 
-/* ===== Lemma Section ===== */
 .hidden {
     display: none !important;
 }
@@ -365,7 +353,6 @@ textarea {
     font-size: 0.9rem;
 }
 
-/* ===== Messages ===== */
 .result-message {
     margin-top: 1rem;
     padding: 0.75rem 1rem;
@@ -384,7 +371,6 @@ textarea {
     border: 1px solid #fca5a5;
 }
 
-/* ===== Footer ===== */
 footer {
     text-align: center;
     padding: 2rem;
@@ -401,7 +387,6 @@ footer code {
     font-size: 0.85rem;
 }
 
-/* ===== Responsive ===== */
 @media (max-width: 768px) {
     header {
         flex-direction: column;
@@ -430,7 +415,6 @@ footer code {
     }
 }
 
-/* ===== Loading Animation ===== */
 .loading {
     display: inline-block;
     width: 20px;
@@ -445,7 +429,6 @@ footer code {
     to { transform: rotate(360deg); }
 }
 
-/* ===== Utility Classes ===== */
 .text-center { text-align: center; }
 .text-muted { color: var(--text-muted); }
 .mt-1 { margin-top: 0.5rem; }

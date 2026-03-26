@@ -16,7 +16,6 @@
     </header>
 
     <main>
-        <!-- Глобальная статистика -->
         <section id="global-stats-section" class="stats-card">
             <h2>📊 Статистика корпуса</h2>
             <div id="global-stats" class="stats-grid">
@@ -24,7 +23,6 @@
             </div>
         </section>
 
-        <!-- Загрузка документа -->
         <section id="upload-section" class="card">
             <h2>📤 Загрузить документ</h2>
             <form id="upload-form" class="form-grid">
@@ -41,7 +39,6 @@
             <div id="upload-result" class="result-message"></div>
         </section>
 
-        <!-- Поиск -->
         <section id="search-section" class="card">
             <h2>🔎 Поиск по корпусу</h2>
             <form id="search-form" class="form-grid">
@@ -71,7 +68,6 @@
             <div id="search-results" class="results-container"></div>
         </section>
 
-        <!-- Список документов -->
         <section id="documents-section" class="card">
             <div class="section-header">
                 <h2>📁 Документы в корпусе</h2>
@@ -91,7 +87,6 @@
             <ul id="documents-list" class="documents-list"></ul>
         </section>
 
-        <!-- Детальная информация о лемме (скрыта по умолчанию) -->
         <section id="lemma-section" class="card hidden">
             <div class="section-header">
                 <h2>🔤 Информация о лемме: <span id="lemma-title"></span></h2>
@@ -102,7 +97,7 @@
     </main>
 
     <footer>
-        <p>Corpus Manager v1.0.0 | API: <code id="api-url">http://127.0.0.1:8000</code></p>
+        <p>API: <code id="api-url">http://127.0.0.1:8000</code></p>
     </footer>
 
     <script src="script.js"></script>

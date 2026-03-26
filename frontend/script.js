@@ -266,7 +266,7 @@ async function toggleDocStats(docId) {
     statsDiv.innerHTML = '<span class="loading"></span> Загрузка...';
     
     try {
-        const response = await fetch(`${API_BASE_URL}/documents/${docId}`);
+        const response = await fetch(`${API_BASE_URL}/documents/${docId}?with_stats=true`);
         if (!response.ok) throw new Error(`Ошибка ${response.status}`);
         const doc = await response.json();
         
@@ -298,7 +298,6 @@ async function toggleDocStats(docId) {
     }
 }
 
-// ===== Редактирование метаданных =====
 async function editMetadata(docId, button) {
     const li = button.closest('.doc-item');
     const currentMeta = JSON.parse(li.dataset.meta || '{}');
