@@ -7,54 +7,103 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
     <header>
-        <h1>Corpus Manager</h1>
+        <h1>🔍 Corpus Manager</h1>
+        <nav>
+            <a href="index.html" class="active">Главная</a>
+            <a href="help.html">Справка</a>
+        </nav>
     </header>
 
     <main>
-        <section id="upload-section">
-            <h2>Загрузить документ</h2>
-            <form id="upload-form">
-                <input type="file" id="file-input" accept=".txt,.rtf,.pdf,.docx" required>
-                <label for="meta-input">Метаданные (JSON, опционально):</label>
-                <textarea id="meta-input" placeholder='{"author": "Пушкин", "year": 1833}'></textarea>
-                <button type="submit">Загрузить</button>
-            </form>
-            <div id="upload-result"></div>
-        </section>
-
-        <hr>
-
-        <section id="search-section">
-            <h2>Поиск по корпусу</h2>
-            <form id="search-form">
-                <input type="text" id="query-input" placeholder="Введите слово или лемму..." required>
-                <select id="query-type-select">
-                    <option value="lemma">По лемме</option>
-                    <option value="word_form">По словоформе</option>
-                    <option value="pos">По части речи</option>
-                </select>
-                <label>Контекст: <input type="number" id="context-window" value="3" min="0" max="20"></label>
-                <label>Лимит: <input type="number" id="result-limit" value="10" min="1" max="500"></label>
-                <button type="submit">Найти</button>
-            </form>
-            <div id="search-results">
-                <!-- Результаты будут отображаться здесь -->
+        <!-- Глобальная статистика -->
+        <section id="global-stats-section" class="stats-card">
+            <h2>📊 Статистика корпуса</h2>
+            <div id="global-stats" class="stats-grid">
+                <p>Загрузка...</p>
             </div>
         </section>
 
-        <hr>
-
-        <section id="documents-section">
-            <h2>Документы в корпусе</h2>
-            <button id="refresh-docs-btn">Обновить список</button>
-            <ul id="documents-list">
-                <!-- Список документов будет сюда -->
-            </ul>
+        <!-- Загрузка документа -->
+        <section id="upload-section" class="card">
+            <h2>📤 Загрузить документ</h2>
+            <form id="upload-form" class="form-grid">
+                <div class="form-group">
+                    <label for="file-input">Файл:</label>
+                    <input type="file" id="file-input" accept=".txt,.rtf,.pdf,.docx" required>
+                </div>
+                <div class="form-group full-width">
+                    <label for="meta-input">Метаданные (JSON, опционально):</label>
+                    <textarea id="meta-input" placeholder='{"author": "Пушкин", "year": 1833}' rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Загрузить</button>
+            </form>
+            <div id="upload-result" class="result-message"></div>
         </section>
 
+        <!-- Поиск -->
+        <section id="search-section" class="card">
+            <h2>🔎 Поиск по корпусу</h2>
+            <form id="search-form" class="form-grid">
+                <div class="form-group full-width">
+                    <label for="query-input">Запрос:</label>
+                    <input type="text" id="query-input" placeholder="Введите слово, лемму или регулярное выражение..." required>
+                </div>
+                <div class="form-group">
+                    <label for="query-type-select">Тип поиска:</label>
+                    <select id="query-type-select">
+                        <option value="lemma">По лемме</option>
+                        <option value="word_form">По словоформе</option>
+                        <option value="pos">По части речи</option>
+                        <option value="regex">По регулярному выражению</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="context-window">Контекст (± слов):</label>
+                    <input type="number" id="context-window" value="3" min="0" max="20">
+                </div>
+                <div class="form-group">
+                    <label for="result-limit">Лимит:</label>
+                    <input type="number" id="result-limit" value="10" min="1" max="500">
+                </div>
+                <button type="submit" class="btn btn-primary">Найти</button>
+            </form>
+            <div id="search-results" class="results-container"></div>
+        </section>
+
+        <!-- Список документов -->
+        <section id="documents-section" class="card">
+            <div class="section-header">
+                <h2>📁 Документы в корпусе</h2>
+                <div class="actions">
+                    <button id="refresh-docs-btn" class="btn btn-secondary">🔄 Обновить</button>
+                    <button id="export-corpus-btn" class="btn btn-success">📦 Экспорт (ZIP)</button>
+                </div>
+            </div>
+            
+            <!-- Пагинация -->
+            <div class="pagination" id="documents-pagination">
+                <button id="prev-page-btn" class="btn btn-sm" disabled>← Назад</button>
+                <span id="page-info">Страница 1</span>
+                <button id="next-page-btn" class="btn btn-sm">Вперёд →</button>
+            </div>
+            
+            <ul id="documents-list" class="documents-list"></ul>
+        </section>
+
+        <!-- Детальная информация о лемме (скрыта по умолчанию) -->
+        <section id="lemma-section" class="card hidden">
+            <div class="section-header">
+                <h2>🔤 Информация о лемме: <span id="lemma-title"></span></h2>
+                <button id="close-lemma-btn" class="btn btn-sm">✕ Закрыть</button>
+            </div>
+            <div id="lemma-content" class="lemma-content"></div>
+        </section>
     </main>
+
+    <footer>
+        <p>Corpus Manager v1.0.0 | API: <code id="api-url">http://127.0.0.1:8000</code></p>
+    </footer>
 
     <script src="script.js"></script>
 </body>

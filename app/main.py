@@ -1,6 +1,11 @@
+import os
+
 from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
+import zipfile
+import tempfile
 from typing import Optional, List
 import time
 
@@ -8,7 +13,7 @@ from app.database import engine, Base, get_db
 from app.models import Document, Token
 from app.schemas import (
     SearchQuery, SearchResponse, DocumentResponse, 
-    DocumentStats, UploadFileRequest
+    DocumentStats, UpdateDocumentRequest, UploadFileRequest
 )
 from app.services.text_processor import TextProcessor
 from app.services.morph_analyzer import MorphAnalyzer
@@ -217,3 +222,66 @@ def api_help():
         "search_query_types": ["lemma", "word_form", "pos", "regex"],
         "supported_formats": list(TextProcessor.SUPPORTED_FORMATS.keys())
     }
+
+@app.get("/documents/{doc_id}/download", tags=["Documents"])
+def download_document(doc_id: int, db: Session = Depends(get_db)):
+    """Скачать оригинальный файл документа"""
+    doc = db.query(Document).filter(Document.id == doc_id).first()
+    if not doc or not doc.filepath:
+        raise HTTPException(status_code=404, detail="Файл документа не найден")
+    
+    if not os.path.exists(doc.filepath):
+        raise HTTPException(status_code=500, detail="Файл на диске отсутствует")
+    
+    return FileResponse(
+        path=doc.filepath,
+        filename=doc.filename,
+        media_type='application/octet-stream' # или более точный тип, если известен
+    )
+
+@app.get("/corpus/export", tags=["Documents"])
+def export_corpus_archive(db: Session = Depends(get_db)):
+    """Скачать архив со всеми документами корпуса"""
+    docs = db.query(Document).all()
+    
+    if not docs:
+        raise HTTPException(status_code=404, detail="Корпус пуст")
+
+    temp_dir = tempfile.mkdtemp()
+    zip_path = os.path.join(temp_dir, "corpus_export.zip")
+
+    with zipfile.ZipFile(zip_path, 'w') as zipf:
+        for doc in docs:
+            if doc.filepath and os.path.exists(doc.filepath):
+                zipf.write(doc.filepath, arcname=doc.filename)
+
+    def cleanup():
+        import shutil
+        shutil.rmtree(temp_dir)
+
+    import atexit
+    atexit.register(cleanup)
+
+    return FileResponse(
+        path=zip_path,
+        filename="corpus_export.zip",
+        media_type='application/zip',
+    )
+
+@app.put("/documents/{doc_id}", response_model=DocumentResponse, tags=["Documents"])
+def update_document(doc_id: int, request: UpdateDocumentRequest, db: Session = Depends(get_db)):
+    """Обновить метаданные документа (имя файла, meta_data)"""
+    doc = db.query(Document).filter(Document.id == doc_id).first()
+    if not doc:
+        raise HTTPException(status_code=404, detail="Документ не найден")
+    
+    if request.filename is not None:
+        doc.filename = request.filename
+    if request.meta_data is not None:
+        doc.meta_data = request.meta_data
+    
+    db.commit()
+    db.refresh(doc)
+    
+    # Используем model_validate как в GET
+    return DocumentResponse.model_validate(doc)

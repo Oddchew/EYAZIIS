@@ -86,3 +86,8 @@ class DocumentResponse(BaseModel):
             return full_content[:500] if full_content else ""
         # Если поле было передано явно, возвращаем его
         return v if v is not None else ""
+
+
+class UpdateDocumentRequest(BaseModel):
+    filename: Optional[str] = None
+    meta_data: Optional[Dict[str, Any]] = None
