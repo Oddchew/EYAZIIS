@@ -66,11 +66,10 @@ class DocumentResponse(BaseModel):
     id: int
     filename: str
     file_type: str
-    # Сделаем content_preview опциональным и сгенерируем его ниже
     content_preview: Optional[str] = None
     created_at: datetime
     is_processed: bool
-    # meta_data: Optional[Dict[str, Any]] = {} # Добавьте, если нужно отображать
+    meta_data: Optional[Dict[str, Any]] = {} # Добавьте, если нужно отображать
     stats: Optional[DocumentStats] = None
 
     class Config:

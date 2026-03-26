@@ -1,5 +1,6 @@
 import os
 import aiofiles
+import subprocess
 from pathlib import Path
 from app.config import settings
 
@@ -53,10 +54,19 @@ class TextProcessor:
         return '\n'.join([para.text for para in doc.paragraphs])
     
     @staticmethod
-    async def _read_doc(filepath: str) -> str:
-        # Для .doc можно использовать comtypes (Windows) или antiword (Linux)
-        # Для простоты в лабе можно потребовать конвертацию в .docx
-        raise NotImplementedError("Формат .doc требует дополнительной настройки. Рекомендуется использовать .docx")
+    async def _read_doc(file_path: str) -> str:
+        try:
+            result = subprocess.run(
+                ["antiword", file_path],
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            return result.stdout
+        except subprocess.CalledProcessError as e:
+            raise ValueError(f"Не удалось извлечь текст из .doc файла: {e}")
+        except FileNotFoundError:
+            raise RuntimeError("Утилита 'antiword' не установлена. Выполните: sudo apt install antiword")
     
     @staticmethod
     def save_uploaded_file(file_content: bytes, filename: str) -> str:

@@ -4,6 +4,7 @@ from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
+import unicodedata
 import zipfile
 import tempfile
 from typing import Optional, List
@@ -53,8 +54,22 @@ def read_root():
         "status": "running"
     }
 
+import subprocess
 
-# === Работа с документами ===
+@staticmethod
+async def _read_doc(file_path: str) -> str:
+    try:
+        result = subprocess.run(
+            ["antiword", file_path],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        return result.stdout
+    except subprocess.CalledProcessError as e:
+        raise ValueError(f"Не удалось извлечь текст из .doc файла: {e}")
+    except FileNotFoundError:
+        raise RuntimeError("Утилита 'antiword' не установлена. Выполните: sudo apt install antiword")
 
 @app.post("/documents/upload", tags=["Documents"])
 async def upload_document(
@@ -110,12 +125,10 @@ def list_documents(skip: int = 0, limit: int = 20, db: Session = Depends(get_db)
 
 @app.get("/documents/{doc_id}", response_model=DocumentResponse, tags=["Documents"])
 def get_document(doc_id: int, with_stats: bool = False, db: Session = Depends(get_db)):
-    """Информация о конкретном документе"""
     doc = db.query(Document).filter(Document.id == doc_id).first()
     if not doc:
         raise HTTPException(status_code=404, detail="Документ не найден")
 
-    # Используем model_validate вместо from_orm
     response = DocumentResponse.model_validate(doc)
 
     if with_stats:
@@ -155,33 +168,42 @@ def search_corpus(query: SearchQuery, db: Session = Depends(get_db)):
     result = SearchEngine.search_concordances(db, query)
     return result
 
+def normalize_lemma(lemma: str) -> str:
+    return unicodedata.normalize('NFKC', lemma.strip().lower())
 
 @app.get("/lemmas/{lemma}", tags=["Analysis"])
 def get_lemma_info(lemma: str, db: Session = Depends(get_db)):
     """Частотная информация о лемме во всём корпусе"""
-    # Все вхождения леммы
-    tokens = db.query(Token).filter(Token.lemma.ilike(lemma)).all()
+    
+    # 1. Лемматизируем запрос через тот же анализатор, что и при индексации
+    parsed = morph_analyzer.morph.parse(lemma)[0]  # доступ к экземпляру MorphAnalyzer
+    query_lemma = parsed.normal_form  # "Шляпы" → "шляпа"
+    
+    # 2. Нормализуем для надёжного сравнения
+    normalized = unicodedata.normalize('NFKC', query_lemma.strip())
+    
+    # 3. Ищем в БД (без func.lower, если леммы уже хранятся в нижнем регистре)
+    tokens = db.query(Token).filter(
+        Token.lemma == normalized
+    ).all()
     
     if not tokens:
-        raise HTTPException(404, f"Лемма '{lemma}' не найдена в корпусе")
+        # 🔍 Добавим подсказки для отладки
+        debug_info = {
+            "original_query": lemma,
+            "lemmatized_query": query_lemma,
+            "normalized_query": normalized,
+            "sample_lemmas_in_db": [t.lemma for t in db.query(Token.lemma).distinct().limit(10).all()]
+        }
+        raise HTTPException(
+            status_code=404, 
+            detail={
+                "error": f"Лемма '{lemma}' не найдена в корпусе",
+                "debug": debug_info
+            }
+        )
     
-    # Группировка по словоформам
-    forms = {}
-    for t in tokens:
-        forms[t.word_form] = forms.get(t.word_form, 0) + 1
-    
-    # Группировка по POS
-    pos_dist = {}
-    for t in tokens:
-        pos_dist[t.pos] = pos_dist.get(t.pos, 0) + 1
-    
-    return {
-        "lemma": lemma,
-        "total_occurrences": len(tokens),
-        "word_forms": dict(sorted(forms.items(), key=lambda x: x[1], reverse=True)),
-        "pos_distribution": pos_dist,
-        "sample_documents": list(set([t.document_id for t in tokens[:10]]))
-    }
+    # ... остальная логика
 
 
 @app.get("/stats/global", tags=["Statistics"])
