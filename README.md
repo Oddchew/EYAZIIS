@@ -14,3 +14,7 @@ Python 3.11/3.12, FastAPI, SQLAlchemy, SQLite, pymorphy3
 4. `python run.py`
 
 API: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+
+## Запуск интерфейса
+Для запуска интерфейса перейдите в папку frontend и выполните:
+`python3 -m http.server 8080`
