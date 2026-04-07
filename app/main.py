@@ -23,7 +23,6 @@ from app.config import settings
 
 from sqlalchemy.sql import func
 
-# Создаём таблицы БД
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
@@ -32,7 +31,6 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS для фронтенда
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # В продакшене укажите конкретные домены
@@ -41,7 +39,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Инициализация сервисов
 morph_analyzer = MorphAnalyzer()
 
 
@@ -155,8 +152,6 @@ def delete_document(doc_id: int, db: Session = Depends(get_db)):
     return {"status": "deleted", "id": doc_id}
 
 
-# === Поиск и анализ ===
-
 @app.post("/search", response_model=SearchResponse, tags=["Search"])
 def search_corpus(query: SearchQuery, db: Session = Depends(get_db)):
     """
@@ -203,7 +198,23 @@ def get_lemma_info(lemma: str, db: Session = Depends(get_db)):
             }
         )
     
-    # ... остальная логика
+       # Группировка по словоформам
+    forms = {}
+    for t in tokens:
+        forms[t.word_form] = forms.get(t.word_form, 0) + 1
+    
+    # Группировка по POS
+    pos_dist = {}
+    for t in tokens:
+        pos_dist[t.pos] = pos_dist.get(t.pos, 0) + 1
+    
+    return {
+        "lemma": lemma,
+        "total_occurrences": len(tokens),
+        "word_forms": dict(sorted(forms.items(), key=lambda x: x[1], reverse=True)),
+        "pos_distribution": pos_dist,
+        "sample_documents": list(set([t.document_id for t in tokens[:10]]))
+    }
 
 
 @app.get("/stats/global", tags=["Statistics"])
@@ -226,8 +237,6 @@ def get_corpus_stats(db: Session = Depends(get_db)):
         "top_lemmas": [{"lemma": l, "count": c} for l, c in top_lemmas]
     }
 
-
-# === Справка ===
 
 @app.get("/help/api", tags=["Help"])
 def api_help():
