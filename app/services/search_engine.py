@@ -15,10 +15,8 @@ class SearchEngine:
         """
         start_time = time.time()
         
-        # Базовый запрос к токенам
         token_query = db.query(Token).join(Document)
-        
-        # Применяем фильтры по типу запроса
+
         if query.query_type == "lemma":
             token_query = token_query.filter(Token.lemma.ilike(f"%{query.query}%"))
         elif query.query_type == "word_form":
@@ -26,24 +24,19 @@ class SearchEngine:
         elif query.query_type == "pos":
             token_query = token_query.filter(Token.pos == query.query.upper())
         elif query.query_type == "regex":
-            # Внимание: regex может быть медленным на больших корпусах
             token_query = token_query.filter(Token.word_form.op("REGEXP")(query.query))
         
-        # Фильтр по документу
         if query.document_id:
             token_query = token_query.filter(Token.document_id == query.document_id)
         
-        # Фильтр по части речи
         if query.pos_filter:
             token_query = token_query.filter(Token.pos == query.pos_filter.upper())
         
-        # Получаем результаты с лимитом
         tokens = token_query.limit(query.limit).all()
         total_found = token_query.count()  # Общее количество без лимита
         
         results = []
         for token in tokens:
-            # Получаем контекст: ±N слов
             context = SearchEngine._get_context(db, token, query.context_window)
             
             # Получаем имя файла
@@ -71,7 +64,6 @@ class SearchEngine:
     @staticmethod
     def _get_context(db: Session, token: Token, window: int) -> dict:
         """Получение левого и правого контекста для токена"""
-        # Левый контекст
         left_tokens = db.query(Token.word_form).filter(
             and_(
                 Token.document_id == token.document_id,
@@ -80,7 +72,6 @@ class SearchEngine:
             )
         ).order_by(Token.position.desc()).all()
         
-        # Правый контекст  
         right_tokens = db.query(Token.word_form).filter(
             and_(
                 Token.document_id == token.document_id,
@@ -97,7 +88,6 @@ class SearchEngine:
     @staticmethod
     def get_document_stats(db: Session, document_id: int) -> dict:
         """Статистика по документу: частоты, POS-распределение и т.д."""
-        # Общее количество токенов
         total_tokens = db.query(func.count(Token.id)).filter(
             Token.document_id == document_id
         ).scalar()
@@ -107,13 +97,11 @@ class SearchEngine:
             Token.document_id == document_id
         ).scalar()
         
-        # Распределение по частям речи
         pos_dist_raw = db.query(Token.pos, func.count(Token.id)).filter(
             Token.document_id == document_id
         ).group_by(Token.pos).all()
         pos_distribution = {pos: count for pos, count in pos_dist_raw}
         
-        # Топ-10 лемм
         top_lemmas_raw = db.query(Token.lemma, func.count(Token.id)).filter(
             Token.document_id == document_id
         ).group_by(Token.lemma).order_by(

@@ -14,7 +14,6 @@ def analyze_word(word: str) -> dict:
     }
 
 def main():
-    # Ждем JSON-ввод из stdin
     input_line = sys.stdin.readline().strip()
     if not input_line:
         return
