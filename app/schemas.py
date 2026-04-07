@@ -4,7 +4,6 @@ from typing import Optional, List, Dict, Any
 from datetime import datetime
 from app.models import Document # <-- Добавим импорт модели
 
-# === Запросы ===
 class SearchQuery(BaseModel):
     query: str = Field(..., min_length=1, description="Поисковый запрос (слово или лемма)")
     query_type: str = Field(default="lemma", enum=["lemma", "word_form", "pos", "regex"])
@@ -18,7 +17,6 @@ class UploadFileRequest(BaseModel):
     meta_data: Optional[Dict[str, Any]] = None
 
 
-# === Ответы ===
 class TokenResponse(BaseModel):
     word_form: str
     lemma: str
@@ -75,15 +73,12 @@ class DocumentResponse(BaseModel):
     class Config:
         from_attributes = True
 
-    # Добавим валидатор для content_preview
     @field_validator('content_preview', mode='before')
     @classmethod
     def generate_content_preview(cls, v, info):
-        # Если content_preview не был передан, пытаемся получить его из 'content' модели
-        if v is None and info.data.get('content'): # info.data - словарь данных от ORM
+        if v is None and info.data.get('content'):
             full_content = info.data.get('content')
             return full_content[:500] if full_content else ""
-        # Если поле было передано явно, возвращаем его
         return v if v is not None else ""
 
 

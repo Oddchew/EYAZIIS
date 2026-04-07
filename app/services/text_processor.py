@@ -2,6 +2,8 @@ import os
 import aiofiles
 import subprocess
 from pathlib import Path
+from PyPDF2 import PdfReader
+from docx import Document
 from app.config import settings
 
 class TextProcessor:
@@ -37,7 +39,6 @@ class TextProcessor:
     
     @staticmethod
     async def _read_pdf(filepath: str) -> str:
-        from PyPDF2 import PdfReader
         text = []
         with open(filepath, 'rb') as f:
             reader = PdfReader(f)
@@ -49,7 +50,6 @@ class TextProcessor:
     
     @staticmethod
     async def _read_docx(filepath: str) -> str:
-        from docx import Document
         doc = Document(filepath)
         return '\n'.join([para.text for para in doc.paragraphs])
     

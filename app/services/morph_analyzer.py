@@ -2,6 +2,8 @@
 import pymorphy3
 from typing import List, Optional
 from app.models import Token
+import re
+from nltk.tokenize import sent_tokenize
 
 class MorphAnalyzer:
     def __init__(self):
@@ -20,9 +22,6 @@ class MorphAnalyzer:
     
     def analyze_text(self, text: str, doc_id: int, sentence_splitter=None) -> List[Token]:
         """Токенизация и морфологический анализ текста"""
-        import re
-        from nltk.tokenize import sent_tokenize
-        
         tokens = []
         position = 0
         

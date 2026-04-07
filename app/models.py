@@ -11,8 +11,7 @@ class Document(Base):
     filepath = Column(String, nullable=True)
     content = Column(Text)
     file_type = Column(String)
-    # Переименовали 'metadata' в 'meta_data'
-    meta_data = Column(JSON, default=dict)  # или custom_metadata, document_metadata и т.п.
+    meta_data = Column(JSON, default=dict) 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     is_processed = Column(Boolean, default=False)
     

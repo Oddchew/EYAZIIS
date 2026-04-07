@@ -8,7 +8,8 @@ import unicodedata
 import zipfile
 import tempfile
 from typing import Optional, List
-import time
+import subprocess
+import json
 
 from app.database import engine, Base, get_db
 from app.models import Document, Token
@@ -51,8 +52,6 @@ def read_root():
         "status": "running"
     }
 
-import subprocess
-
 @staticmethod
 async def _read_doc(file_path: str) -> str:
     try:
@@ -75,9 +74,7 @@ async def upload_document(
     db: Session = Depends(get_db)
 ):
     """Загрузка нового текста в корпус"""
-    import json
     
-    # Валидация расширения
     ext = file.filename.split('.')[-1].lower()
     if f".{ext}" not in TextProcessor.SUPPORTED_FORMATS:
         raise HTTPException(400, f"Неподдерживаемый формат: .{ext}")
@@ -96,7 +93,7 @@ async def upload_document(
     doc = Document(
         filename=file.filename,
         filepath=filepath,
-        content=text[:10000],  # Храним превью, полный текст в файле
+        content=text[:10000],  # Только превью (10000 символов)
         file_type=ext,
         meta_data=meta_dict
     )
