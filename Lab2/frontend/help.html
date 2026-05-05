@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Справка - Corpus Manager</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>🔍 Corpus Manager - Справка</h1>
+        <nav>
+            <a href="index.html">← На главную</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="card">
+            <h2>📚 Как пользоваться приложением</h2>
+            
+            <h3>📤 Загрузка документа</h3>
+            <ol>
+                <li>Нажмите "Выберите файл" и выберите документ (.txt, .rtf, .pdf, .docx, .doc)</li>
+                <li>(Опционально) Введите метаданные в формате JSON</li>
+                <li>Нажмите "Загрузить"</li>
+            </ol>
+
+            <h3>🔎 Поиск по корпусу</h3>
+            <ol>
+                <li>Введите запрос в поле поиска</li>
+                <li>Выберите тип поиска:
+                    <ul>
+                        <li><strong>По лемме</strong> — поиск по словарной форме (бежать → бежал, бегу)</li>
+                        <li><strong>По словоформе</strong> — точное совпадение слова</li>
+                        <li><strong>По части речи</strong> — фильтр по грамматической категории</li>
+                        <li><strong>По регулярному выражению</strong> — расширенный поиск по шаблону</li>
+                    </ul>
+                </li>
+                <li>Настройте контекст и лимит результатов</li>
+                <li>Нажмите "Найти"</li>
+            </ol>
+
+            <h3>📁 Управление документами</h3>
+            <ul>
+                <li><strong>📥 Скачать</strong> — получить оригинальный файл</li>
+                <li><strong>📊 Статистика</strong> — просмотреть аналитику документа</li>
+                <li><strong>✏️ Редактировать</strong> — изменить имя и метаданные</li>
+                <li><strong>🗑️ Удалить</strong> — удалить документ из корпуса</li>
+            </ul>
+
+            <h3>📦 Экспорт корпуса</h3>
+            <p>Нажмите "Экспорт (ZIP)" для скачивания архива со всеми документами и метаданными.</p>
+        </section>
+
+        <section class="card">
+            <h2>❓ Глоссарий</h2>
+            <dl>
+                <dt><strong>Лемма</strong></dt>
+                <dd>Начальная (словарная) форма слова. Например: "бежать" для "бежал", "бегу", "бежит".</dd>
+                
+                <dt><strong>Конкорданс</strong></dt>
+                <dd>Список вхождений слова с контекстом — несколько слов до и после искомой единицы.</dd>
+                
+                <dt><strong>POS (Part-of-Speech)</strong></dt>
+                <dd>Часть речи. Основные категории:
+                    <ul>
+                        <li><strong>NOUN</strong> — Существительное (дом, свобода)</li>
+                        <li><strong>VERB</strong> — Глагол (читать, был)</li>
+                        <li><strong>ADJ</strong> — Прилагательное (красный, быстрый)</li>
+                        <li><strong>ADV</strong> — Наречие (быстро, вчера)</li>
+                        <li><strong>PRON</strong> — Местоимение (я, он, этот)</li>
+                        <li><strong>ADP</strong> — Предлог (в, на, под)</li>
+                        <li><strong>CONJ</strong> — Союз (и, но, что)</li>
+                        <li><strong>PART</strong> — Частица (не, бы, ли)</li>
+                        <li><strong>INTJ</strong> — Междометие (ох, эй)</li>
+                        <li><strong>NUM</strong> — Числительное (пять, первый)</li>
+                        <li><strong>AUX</strong> — Вспомогательный глагол (быть в составе сказуемого)</li>
+                    </ul>
+                </dd>
+                
+                <dt><strong>Токен</strong></dt>
+                <dd>Минимальная единица текста после токенизации (слово, знак препинания).</dd>
+                
+                <dt><strong>Метаданные</strong></dt>
+                <dd>Дополнительная информация о документе: автор, год, жанр, источник и т.п. в формате JSON.</dd>
+            </dl>
+        </section>
+
+        <section class="card" id="api-help-section">
+            <h2>🔌 API Справка</h2>
+            <div id="api-help-content">
+                <p>Загрузка информации об API...</p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>Corpus Manager v1.0.0</p>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        // Загружаем справку из API при открытии страницы help.html
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (document.getElementById('api-help-content')) {
+                await loadApiHelp();
+            }
+        });
+    </script>
+</body>
+</html>
