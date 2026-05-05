@@ -122,15 +122,13 @@ def detect_intent(tokens: list[str]) -> str:
     return 'general'
 
 
-# ─────────────────────────────────────────────
-#  Markdown → HTML
-# ─────────────────────────────────────────────
 def md_to_html(text: str) -> str:
     if not isinstance(text, str):
         text = str(text)
-    text = re.sub(r'^### (.+)$', r'<h3>\1</h3>', text, flags=re.MULTILINE)
-    text = re.sub(r'^## (.+)$',  r'<h2>\1</h2>', text, flags=re.MULTILINE)
-    text = re.sub(r'^# (.+)$',   r'<h1>\1</h1>', text, flags=re.MULTILINE)
+    text = re.sub(r'^#### (.+)$', r'<h4>\1</h4>', text, flags=re.MULTILINE)
+    text = re.sub(r'^### (.+)$',  r'<h3>\1</h3>', text, flags=re.MULTILINE)
+    text = re.sub(r'^## (.+)$',   r'<h2>\1</h2>', text, flags=re.MULTILINE)
+    text = re.sub(r'^# (.+)$',    r'<h1>\1</h1>', text, flags=re.MULTILINE)
     text = re.sub(r'^---$', '<hr>', text, flags=re.MULTILINE)
 
     def replace_list(m):
@@ -148,9 +146,6 @@ def md_to_html(text: str) -> str:
     return text
 
 
-# ─────────────────────────────────────────────
-#  Persistent history helpers
-# ─────────────────────────────────────────────
 def load_all_sessions() -> dict:
     if os.path.exists(HISTORY_FILE):
         try:
@@ -193,9 +188,6 @@ def render_session_for_frontend(session_data: dict) -> dict:
     return rendered
 
 
-# ─────────────────────────────────────────────
-#  Routes
-# ─────────────────────────────────────────────
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -227,8 +219,6 @@ def chat():
     if intent == 'help' and len(filtered) <= 3:
         record_exchange(session_id, user_msg, '[справка]', ts)
         return jsonify({'reply': HELP_TEXT, 'intent': 'help'})
-
-    # ── Call Gemini with multi-turn context ─────
     try:
         client = genai.Client(
             api_key=GOOGLE_API_KEY,
@@ -243,7 +233,6 @@ def chat():
             "Отвечай на русском языке. Используй Markdown для форматирования."
         )
 
-        # Maintain rolling context (last 10 turns)
         ctx = gemini_contexts.setdefault(session_id, [])
         ctx.append({'role': 'user', 'parts': [{'text': user_msg}]})
         contents = ctx[-10:]
@@ -266,7 +255,6 @@ def chat():
         return jsonify({'error': f'Ошибка при обращении к модели: {exc}'}), 500
 
 
-# ── Session management endpoints ──────────────
 @app.route('/api/sessions', methods=['GET'])
 def get_sessions():
     data = load_all_sessions()
@@ -294,7 +282,6 @@ def get_session(session_id):
     if session_id not in data:
         return jsonify({'error': 'Сессия не найдена'}), 404
     
-    # Render bot messages as HTML before sending to frontend
     session = render_session_for_frontend(data[session_id])
     return jsonify(session)
 
