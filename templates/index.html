@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>ТрансПомощник</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset & tokens ───────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #0e1117;
+      --surface:    #161b27;
+      --surface2:   #1e2535;
+      --border:     #2a3347;
+      --accent:     #f0a500;
+      --accent2:    #ff6b35;
+      --text:       #e8ecf4;
+      --muted:      #7a8ba8;
+      --user-bg:    #1a3a5c;
+      --user-text:  #cfe4ff;
+      --bot-bg:     #1b2233;
+      --bot-text:   #dde6f5;
+      --success:    #3ecf8e;
+      --danger:     #f04040;
+      --sidebar-w:  280px;
+      --header-h:   60px;
+      --radius:     14px;
+      --transition: 0.22s cubic-bezier(.4,0,.2,1);
+    }
+
+    html, body { height: 100%; overflow: hidden; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Manrope', sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Layout shell ─────────────────────────────── */
+    .shell {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ── Sidebar ──────────────────────────────────── */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      transition: transform var(--transition);
+      z-index: 20;
+    }
+
+    .sidebar-header {
+      padding: 18px 16px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sidebar-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .btn-new-chat {
+      width: 100%;
+      padding: 9px 14px;
+      background: var(--accent);
+      color: #111;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background var(--transition), transform 0.1s;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .btn-new-chat:hover   { background: #ffc01a; }
+    .btn-new-chat:active  { transform: scale(0.97); }
+
+    .sessions-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 8px;
+    }
+
+    .sessions-list::-webkit-scrollbar { width: 4px; }
+    .sessions-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    .session-item {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 10px 10px;
+      border-radius: 9px;
+      cursor: pointer;
+      transition: background var(--transition);
+      gap: 8px;
+    }
+    .session-item:hover       { background: var(--surface2); }
+    .session-item.active      { background: var(--surface2); border-left: 3px solid var(--accent); padding-left: 7px; }
+
+    .session-info { flex: 1; min-width: 0; }
+    .session-title {
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--text);
+    }
+    .session-meta {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .session-del {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 4px;
+      font-size: 15px;
+      transition: color var(--transition), background var(--transition);
+      flex-shrink: 0;
+    }
+    .session-del:hover { color: var(--danger); background: rgba(240,64,64,.12); }
+
+    .sessions-empty {
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      padding: 30px 10px;
+    }
+
+    /* ── Main area ────────────────────────────────── */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ── Header ───────────────────────────────────── */
+    header {
+      height: var(--header-h);
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 14px;
+      flex-shrink: 0;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-icon {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .logo-text {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 17px;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+
+    .logo-sub {
+      font-size: 11px;
+      color: var(--muted);
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .header-spacer { flex: 1; }
+
+    .header-btn {
+      padding: 7px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: none;
+      color: var(--muted);
+      font-family: 'Manrope', sans-serif;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color var(--transition), border-color var(--transition), background var(--transition);
+    }
+    .header-btn:hover { color: var(--text); border-color: var(--accent); background: rgba(240,165,0,.08); }
+
+    /* ── Chat area ────────────────────────────────── */
+    .chat-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 28px 0;
+      scroll-behavior: smooth;
+    }
+    .chat-area::-webkit-scrollbar { width: 5px; }
+    .chat-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    .chat-inner {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* ── Messages ─────────────────────────────────── */
+    .msg-row {
+      display: flex;
+      gap: 12px;
+      animation: fadeUp 0.3s ease both;
+    }
+
+    .msg-row.user  { flex-direction: row-reverse; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .msg-avatar {
+      width: 34px; height: 34px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .msg-row.user  .msg-avatar { background: linear-gradient(135deg,#1a4a7a,#0d2b4e); }
+    .msg-row.bot   .msg-avatar { background: linear-gradient(135deg,var(--surface2),#111827); border: 1px solid var(--border); }
+
+    .msg-body { flex: 1; min-width: 0; position: relative; }
+
+    .msg-bubble {
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      line-height: 1.65;
+      position: relative;
+    }
+
+    .msg-row.user .msg-bubble {
+      background: var(--user-bg);
+      color: var(--user-text);
+      border-bottom-right-radius: 4px;
+      margin-left: 40px;
+    }
+    .msg-row.bot .msg-bubble {
+      background: var(--bot-bg);
+      color: var(--bot-text);
+      border-bottom-left-radius: 4px;
+      border: 1px solid var(--border);
+      margin-right: 40px;
+    }
+
+    /* Markdown styles inside bot bubble */
+    .msg-bubble h1, .msg-bubble h2, .msg-bubble h3 {
+      font-family: 'Syne', sans-serif;
+      color: var(--accent);
+      margin: .6em 0 .3em;
+    }
+    .msg-bubble h1 { font-size: 1.2em; }
+    .msg-bubble h2 { font-size: 1.1em; }
+    .msg-bubble h3 { font-size: 1em; }
+    .msg-bubble ul  { margin: .4em 0 .4em 1.2em; }
+    .msg-bubble li  { margin-bottom: .2em; }
+    .msg-bubble strong { color: #f5d27a; }
+    .msg-bubble em     { color: #a8c8f5; }
+    .msg-bubble hr     { border: 0; height: 1px; background: var(--border); margin: 8px 0; }
+    .msg-bubble p  { margin-bottom: .4em; }
+    .msg-bubble p:last-child { margin-bottom: 0; }
+
+    /* Edit button */
+    .edit-btn {
+      position: absolute;
+      top: 6px; right: 6px;
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 13px;
+      padding: 3px 5px;
+      border-radius: 5px;
+      opacity: 0;
+      transition: opacity var(--transition), background var(--transition);
+    }
+    .msg-body:hover .edit-btn { opacity: 1; }
+    .edit-btn:hover { background: rgba(255,255,255,.08); color: var(--text); }
+
+    .msg-edited {
+      font-size: 11px;
+      color: var(--muted);
+      font-style: italic;
+      margin-top: 4px;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    /* ── Typing indicator ─────────────────────────── */
+    .typing-row { display: flex; gap: 12px; }
+    .typing-bubble {
+      background: var(--bot-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      border-bottom-left-radius: 4px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--muted);
+      animation: bounce 1.4s infinite ease-in-out;
+    }
+    .dot:nth-child(2) { animation-delay: .2s; }
+    .dot:nth-child(3) { animation-delay: .4s; }
+    @keyframes bounce {
+      0%,60%,100% { transform: translateY(0); }
+      30%          { transform: translateY(-5px); }
+    }
+
+    /* ── Welcome card ─────────────────────────────── */
+    .welcome-card {
+      background: linear-gradient(135deg, var(--surface2) 0%, #111827 100%);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 28px 28px 24px;
+      margin-bottom: 4px;
+    }
+    .welcome-card h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .welcome-card p  { color: var(--muted); font-size: 14px; margin-bottom: 16px; }
+    .chip-row        { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 5px 13px;
+      font-size: 13px;
+      color: var(--text);
+      cursor: pointer;
+      transition: border-color var(--transition), background var(--transition);
+    }
+    .chip:hover { border-color: var(--accent); background: rgba(240,165,0,.1); }
+
+    /* ── Input area ───────────────────────────────── */
+    .input-area {
+      padding: 14px 24px 20px;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .input-row {
+      max-width: 760px;
+      margin: 0 auto;
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+    textarea#msg-input {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-family: 'Manrope', sans-serif;
+      font-size: 15px;
+      padding: 12px 16px;
+      resize: none;
+      line-height: 1.5;
+      max-height: 140px;
+      min-height: 48px;
+      outline: none;
+      transition: border-color var(--transition);
+    }
+    textarea#msg-input::placeholder { color: var(--muted); }
+    textarea#msg-input:focus { border-color: var(--accent); }
+
+    #send-btn {
+      width: 48px; height: 48px;
+      background: var(--accent);
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background var(--transition), transform 0.1s;
+      flex-shrink: 0;
+    }
+    #send-btn:hover  { background: #ffc01a; }
+    #send-btn:active { transform: scale(0.94); }
+    #send-btn svg    { width: 20px; height: 20px; }
+
+    /* ── Help modal ───────────────────────────────── */
+    .modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.65);
+      backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 100;
+      opacity: 0; pointer-events: none;
+      transition: opacity var(--transition);
+    }
+    .modal-backdrop.open { opacity: 1; pointer-events: all; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 28px 28px 24px;
+      max-width: 540px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      transform: scale(.95);
+      transition: transform var(--transition);
+    }
+    .modal-backdrop.open .modal { transform: scale(1); }
+
+    .modal-head {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 18px;
+    }
+    .modal-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 18px;
+      font-weight: 800;
+    }
+    .modal-close {
+      background: none; border: none;
+      color: var(--muted); font-size: 22px; cursor: pointer;
+      transition: color var(--transition);
+      line-height: 1;
+    }
+    .modal-close:hover { color: var(--text); }
+
+    .modal-body ul  { padding-left: 20px; margin: .5em 0; }
+    .modal-body li  { margin-bottom: .35em; color: var(--bot-text); line-height: 1.55; }
+    .modal-body strong { color: var(--accent); }
+    .modal-body p   { color: var(--muted); margin-bottom: 10px; font-size: 14px; }
+
+    /* ── Edit inline ──────────────────────────────── */
+    .edit-area {
+      display: flex; gap: 8px; margin-top: 8px; align-items: flex-end;
+    }
+    .edit-input {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--accent);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'Manrope', sans-serif;
+      font-size: 14px;
+      padding: 8px 12px;
+      resize: vertical;
+      min-height: 60px;
+      outline: none;
+    }
+    .edit-save, .edit-cancel {
+      padding: 7px 14px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      transition: opacity .2s;
+      flex-shrink: 0;
+    }
+    .edit-save   { background: var(--accent); color: #111; }
+    .edit-cancel { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+    .edit-save:hover, .edit-cancel:hover { opacity: .85; }
+
+    /* ── Responsive ───────────────────────────────── */
+    @media (max-width: 680px) {
+      .sidebar {
+        position: fixed;
+        top: 0; bottom: 0; left: 0;
+        transform: translateX(-100%);
+      }
+      .sidebar.open { transform: translateX(0); box-shadow: 4px 0 20px rgba(0,0,0,.5); }
+      .logo-sub { display: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ── Sidebar ───────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-title">История диалогов</div>
+      <button class="btn-new-chat" onclick="newSession()">
+        <span>＋</span> Новый чат
+      </button>
+    </div>
+    <div class="sessions-list" id="sessions-list">
+      <p class="sessions-empty">История пуста</p>
+    </div>
+  </aside>
+
+  <!-- ── Main ──────────────────────────── -->
+  <div class="main">
+
+    <!-- Header -->
+    <header>
+      <div class="logo">
+        <div class="logo-icon">🚆</div>
+        <div>
+          <div class="logo-text">ТрансПомощник</div>
+          <div class="logo-sub">Вариант 7 · Транспорт</div>
+        </div>
+      </div>
+      <div class="header-spacer"></div>
+      <button class="header-btn" onclick="toggleSidebar()">
+        📂 <span>История</span>
+      </button>
+      <button class="header-btn" onclick="openHelp()">
+        ❓ <span>Справка</span>
+      </button>
+    </header>
+
+    <!-- Chat area -->
+    <div class="chat-area" id="chat-area">
+      <div class="chat-inner" id="chat-inner">
+        <!-- Welcome card -->
+        <div class="welcome-card">
+          <h2>Добро пожаловать!</h2>
+          <p>Задайте любой вопрос о транспорте — я готов помочь. Попробуйте одну из тем:</p>
+          <div class="chip-row">
+            <div class="chip" onclick="sendChip(this)">🚂 История поезда</div>
+            <div class="chip" onclick="sendChip(this)">⚙️ Как работает двигатель</div>
+            <div class="chip" onclick="sendChip(this)">📋 Основные знаки ПДД</div>
+            <div class="chip" onclick="sendChip(this)">⚡ Электромобили</div>
+            <div class="chip" onclick="sendChip(this)">✈️ Устройство самолёта</div>
+            <div class="chip" onclick="sendChip(this)">🚇 Метро: история и устройство</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input -->
+    <div class="input-area">
+      <div class="input-row">
+        <textarea id="msg-input" rows="1" placeholder="Задайте вопрос о транспорте…"></textarea>
+        <button id="send-btn" onclick="sendMessage()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /shell -->
+
+<!-- ── Help modal ─────────────────────── -->
+<div class="modal-backdrop" id="help-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title">🚌 Справка</span>
+      <button class="modal-close" onclick="closeHelp()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+// ── State ───────────────────────────────────────
+let sessionId = null;
+let sidebarOpen = window.innerWidth > 680;
+
+// ── Init ────────────────────────────────────────
+(async () => {
+  const res = await fetch('/api/sessions/new', { method: 'POST' });
+  const d   = await res.json();
+  sessionId = d.session_id;
+  await refreshSessions();
+  autoGrow(document.getElementById('msg-input'));
+})();
+
+// ── Auto-grow textarea ──────────────────────────
+function autoGrow(el) {
+  el.addEventListener('input', () => {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 140) + 'px';
+  });
+}
+
+// ── Sidebar ─────────────────────────────────────
+function toggleSidebar() {
+  sidebarOpen = !sidebarOpen;
+  document.getElementById('sidebar').classList.toggle('open', sidebarOpen);
+}
+
+// ── New session ─────────────────────────────────
+async function newSession() {
+  const res  = await fetch('/api/sessions/new', { method: 'POST' });
+  const d    = await res.json();
+  sessionId  = d.session_id;
+  document.getElementById('chat-inner').innerHTML = `
+    <div class="welcome-card">
+      <h2>Новый диалог</h2>
+      <p>Чем могу помочь сегодня?</p>
+      <div class="chip-row">
+        <div class="chip" onclick="sendChip(this)">🚂 История поезда</div>
+        <div class="chip" onclick="sendChip(this)">⚙️ Как работает двигатель</div>
+        <div class="chip" onclick="sendChip(this)">📋 Основные знаки ПДД</div>
+        <div class="chip" onclick="sendChip(this)">⚡ Электромобили</div>
+      </div>
+    </div>`;
+  await refreshSessions();
+  document.getElementById('sessions-list')
+    .querySelectorAll('.session-item')
+    .forEach(el => el.classList.remove('active'));
+}
+
+// ── Load session ────────────────────────────────
+async function loadSession(sid) {
+  sessionId = sid;
+  const res  = await fetch(`/api/sessions/${sid}`);
+  const data = await res.json();
+
+  const inner = document.getElementById('chat-inner');
+  inner.innerHTML = '';
+
+  data.messages.forEach((msg, idx) => {
+    appendMessage(msg.role === 'user' ? 'user' : 'bot',
+                  msg.content,
+                  sid, idx,
+                  msg.edited || false);
+  });
+
+  document.getElementById('sessions-list')
+    .querySelectorAll('.session-item')
+    .forEach(el => el.classList.toggle('active', el.dataset.sid === sid));
+}
+
+// ── Refresh session list ────────────────────────
+async function refreshSessions() {
+  const res  = await fetch('/api/sessions');
+  const data = await res.json();
+  const list = document.getElementById('sessions-list');
+
+  const entries = Object.entries(data).sort(([,a],[,b]) =>
+    new Date(b.created) - new Date(a.created));
+
+  if (!entries.length) {
+    list.innerHTML = '<p class="sessions-empty">История пуста</p>';
+    return;
+  }
+
+  list.innerHTML = entries.map(([sid, info]) => {
+    const d = new Date(info.created);
+    const ts = d.toLocaleDateString('ru-RU', {day:'2-digit', month:'short'})
+             + ' ' + d.toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'});
+    const isActive = sid === sessionId;
+    return `
+      <div class="session-item${isActive?' active':''}" data-sid="${sid}"
+           onclick="loadSession('${sid}')">
+        <div class="session-info">
+          <div class="session-title">${escHtml(info.title)}</div>
+          <div class="session-meta">${ts} · ${info.message_count/2|0} вопр.</div>
+        </div>
+        <button class="session-del" title="Удалить"
+                onclick="event.stopPropagation();deleteSession('${sid}')">🗑</button>
+      </div>`;
+  }).join('');
+}
+
+async function deleteSession(sid) {
+  await fetch(`/api/sessions/${sid}`, { method: 'DELETE' });
+  if (sid === sessionId) await newSession();
+  else await refreshSessions();
+}
+
+// ── Chip quick-send ─────────────────────────────
+function sendChip(el) {
+  const text = el.textContent.replace(/^[\p{Emoji}\s]+/u, '').trim();
+  document.getElementById('msg-input').value = text;
+  sendMessage();
+}
+
+// ── Append message ──────────────────────────────
+function appendMessage(role, html, sid, idx, edited) {
+  const isUser = role === 'user';
+  const inner  = document.getElementById('chat-inner');
+  const row    = document.createElement('div');
+  row.classList.add('msg-row', isUser ? 'user' : 'bot');
+  row.dataset.sid = sid || sessionId;
+  row.dataset.idx = idx ?? '';
+
+  const editedBadge = edited
+    ? `<div class="msg-edited">✏️ отредактировано</div>` : '';
+
+  row.innerHTML = `
+    <div class="msg-avatar">${isUser ? '👤' : '🚌'}</div>
+    <div class="msg-body">
+      <div class="msg-bubble">${isUser ? escHtml(html) : html}
+        <button class="edit-btn" title="Редактировать"
+                onclick="startEdit(this)">✏️</button>
+      </div>
+      ${editedBadge}
+    </div>`;
+  inner.appendChild(row);
+  row.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  return row;
+}
+
+// ── Typing indicator ────────────────────────────
+function addTyping() {
+  const inner = document.getElementById('chat-inner');
+  const el    = document.createElement('div');
+  el.classList.add('msg-row', 'bot', 'typing-row');
+  el.innerHTML = `
+    <div class="msg-avatar">🚌</div>
+    <div class="typing-bubble">
+      <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    </div>`;
+  inner.appendChild(el);
+  el.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  return el;
+}
+
+// ── Send message ────────────────────────────────
+async function sendMessage() {
+  const input = document.getElementById('msg-input');
+  const text  = input.value.trim();
+  if (!text) return;
+
+  // Current message count (to compute index)
+  const inner = document.getElementById('chat-inner');
+  const existingMsgs = inner.querySelectorAll('.msg-row:not(.typing-row)').length;
+
+  input.value = '';
+  input.style.height = 'auto';
+
+  appendMessage('user', text, sessionId, existingMsgs);
+  const typing = addTyping();
+  document.getElementById('send-btn').disabled = true;
+
+  try {
+    const res  = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text, session_id: sessionId }),
+    });
+    const data = await res.json();
+    inner.removeChild(typing);
+
+    if (data.reply) {
+      const botMsgs = inner.querySelectorAll('.msg-row.bot:not(.typing-row)').length;
+      appendMessage('bot', data.reply, sessionId, existingMsgs + 1);
+    } else {
+      appendMessage('bot', `<p style="color:#f04040">⚠️ ${escHtml(data.error||'Неизвестная ошибка')}</p>`, sessionId, existingMsgs + 1);
+    }
+  } catch {
+    inner.removeChild(typing);
+    appendMessage('bot', '<p style="color:#f04040">⚠️ Ошибка соединения с сервером.</p>', sessionId, existingMsgs + 1);
+  } finally {
+    document.getElementById('send-btn').disabled = false;
+    await refreshSessions();
+  }
+}
+
+// ── Inline edit ─────────────────────────────────
+function startEdit(btn) {
+  const body   = btn.closest('.msg-body');
+  const bubble = body.querySelector('.msg-bubble');
+  const row    = btn.closest('.msg-row');
+  const sid    = row.dataset.sid;
+  const idx    = parseInt(row.dataset.idx, 10);
+
+  // Already editing?
+  if (body.querySelector('.edit-area')) return;
+
+  const currentText = bubble.innerText.replace('✏️','').trim();
+  const ea = document.createElement('div');
+  ea.classList.add('edit-area');
+  ea.innerHTML = `
+    <textarea class="edit-input">${escHtml(currentText)}</textarea>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <button class="edit-save"   onclick="saveEdit(this,'${sid}',${idx})">Сохранить</button>
+      <button class="edit-cancel" onclick="cancelEdit(this)">Отмена</button>
+    </div>`;
+  body.appendChild(ea);
+}
+
+async function saveEdit(btn, sid, idx) {
+  const ea      = btn.closest('.edit-area');
+  const body    = ea.closest('.msg-body');
+  const bubble  = body.querySelector('.msg-bubble');
+  const newText = ea.querySelector('.edit-input').value.trim();
+  if (!newText) return;
+
+  await fetch(`/api/sessions/${sid}/messages/${idx}`, {
+    method:  'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ content: newText }),
+  });
+
+  bubble.innerHTML = escHtml(newText) +
+    `<button class="edit-btn" title="Редактировать" onclick="startEdit(this)">✏️</button>`;
+  ea.remove();
+
+  // Add/update edited badge
+  let badge = body.querySelector('.msg-edited');
+  if (!badge) {
+    badge = document.createElement('div');
+    badge.className = 'msg-edited';
+    body.appendChild(badge);
+  }
+  badge.textContent = '✏️ отредактировано';
+}
+
+function cancelEdit(btn) {
+  btn.closest('.edit-area').remove();
+}
+
+// ── Help modal ──────────────────────────────────
+async function openHelp() {
+  // Fetch help text from server (the /api/chat with 'помощь')
+  document.getElementById('modal-body').innerHTML =
+    '<p>Загрузка…</p>';
+  document.getElementById('help-modal').classList.add('open');
+
+  // Static help (matches the HELP_TEXT in app.py)
+  document.getElementById('modal-body').innerHTML = `
+    <p>Я специализируюсь исключительно на теме <strong>транспорта</strong>.</p>
+    <strong>Что я умею:</strong>
+    <ul>
+      <li>🚗 <strong>Виды транспорта</strong> — автомобили, поезда, самолёты, корабли, ОТ</li>
+      <li>🔧 <strong>Устройство и технологии</strong> — двигатели, КПП, тормоза, электрика</li>
+      <li>📜 <strong>История транспорта</strong> — от повозок до гиперлупа</li>
+      <li>📋 <strong>ПДД и безопасность</strong> — правила, знаки, штрафы</li>
+      <li>🏗️ <strong>Инфраструктура</strong> — дороги, аэропорты, ж/д, порты</li>
+      <li>🌍 <strong>Экология</strong> — электромобили, водород, альтернативное топливо</li>
+    </ul>
+    <br>
+    <strong>Примеры вопросов:</strong>
+    <ul>
+      <li>«Как работает двигатель внутреннего сгорания?»</li>
+      <li>«Чем отличается ABS от ESP?»</li>
+      <li>«История появления метро в Москве»</li>
+      <li>«Какие знаки запрещают обгон?»</li>
+      <li>«Расскажи о технологии Hyperloop»</li>
+    </ul>
+    <br>
+    <strong>Управление:</strong>
+    <ul>
+      <li><strong>История</strong> — просмотр и загрузка прошлых диалогов</li>
+      <li><strong>Новый чат</strong> — начать новую беседу</li>
+      <li>Наведите на сообщение → кнопка ✏️ для редактирования</li>
+      <li>Enter — отправить сообщение</li>
+      <li>Shift+Enter — перенос строки</li>
+    </ul>`;
+}
+
+function closeHelp() {
+  document.getElementById('help-modal').classList.remove('open');
+}
+
+// Close modal by backdrop click
+document.getElementById('help-modal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeHelp();
+});
+
+// ── Keyboard shortcuts ──────────────────────────
+document.getElementById('msg-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+});
+
+// ── Escape closes modal ─────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeHelp();
+});
+
+// ── Utility ─────────────────────────────────────
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+</script>
+</body>
+</html>
