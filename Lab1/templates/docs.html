@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Документы{% endblock %}
+{% block content %}
+<div class="card">
+    <h2>Коллекция ({{ docs|length }})</h2>
+    {% for id, d in docs.items() %}
+    <div class="result-item">
+        <div class="title">
+            <a href="{{ url_for('doc_detail', doc_id=id) }}">[{{ id }}] {{ d.title }}</a>
+        </div>
+        <div class="snippet">{{ d.text[:220] }}…</div>
+        <div class="meta">дата: {{ d.date }}</div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

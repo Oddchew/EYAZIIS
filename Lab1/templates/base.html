@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Поиск{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+<div class="header">
+    <h1>Поиск</h1>
+    <span>Boolean · English</span>
+</div>
+<div class="nav">
+    <a href="{{ url_for('search') }}" class="{% if active == 'search' %}active{% endif %}">Поиск</a>
+    <a href="{{ url_for('docs_page') }}" class="{% if active == 'docs' %}active{% endif %}">Документы</a>
+    <a href="{{ url_for('upload_page') }}" class="{% if active == 'upload' %}active{% endif %}">Загрузка</a>
+    <a href="{{ url_for('metrics_page') }}" class="{% if active == 'metrics' %}active{% endif %}">Метрики</a>
+    <a href="{{ url_for('help_page') }}" class="{% if active == 'help' %}active{% endif %}">Справка</a>
+</div>
+<div class="container">
+    {% block content %}{% endblock %}
+</div>
+</body>
+</html>

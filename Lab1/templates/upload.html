@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Загрузка{% endblock %}
+{% block content %}
+
+{% if message %}
+<div class="card" style="border-color:#86efac; background:#f0fdf4;">
+    <p style="font-size:14px; color:#166534;">{{ message }}</p>
+</div>
+{% endif %}
+{% if error %}
+<div class="card" style="border-color:#fca5a5; background:#fef2f2;">
+    <p style="font-size:14px; color:#991b1b;">{{ error }}</p>
+</div>
+{% endif %}
+
+<div class="card">
+    <h2>Добавить документ (текст)</h2>
+    <form method="POST" action="{{ url_for('upload_page') }}">
+        <input type="hidden" name="action" value="add_text">
+        <p style="margin-bottom:8px;">
+            <label style="font-size:13px; color:#6b7280;">Заголовок</label><br>
+            <input type="text" name="title" required
+                   style="width:100%; padding:8px 12px; border:1px solid #d1d5db; border-radius:6px; font-size:14px;">
+        </p>
+        <p style="margin-bottom:8px;">
+            <label style="font-size:13px; color:#6b7280;">Текст (английский)</label><br>
+            <textarea name="text" rows="6" required
+                      style="width:100%; padding:8px 12px; border:1px solid #d1d5db; border-radius:6px; font-size:14px; font-family:inherit;"></textarea>
+        </p>
+        <button type="submit" style="padding:8px 18px; background:#374151; color:#fff; border:none; border-radius:6px; cursor:pointer; font-size:14px;">
+            Добавить
+        </button>
+    </form>
+</div>
+
+<div class="card">
+    <h2>Загрузить файл (.txt)</h2>
+    <form method="POST" action="{{ url_for('upload_page') }}" enctype="multipart/form-data">
+        <input type="hidden" name="action" value="add_file">
+        <p style="margin-bottom:8px;">
+            <label style="font-size:13px; color:#6b7280;">Заголовок (необязательно — возьмётся имя файла)</label><br>
+            <input type="text" name="title"
+                   style="width:100%; padding:8px 12px; border:1px solid #d1d5db; border-radius:6px; font-size:14px;">
+        </p>
+        <p style="margin-bottom:8px;">
+            <input type="file" name="file" accept=".txt,.text,.md" required>
+        </p>
+        <button type="submit" style="padding:8px 18px; background:#374151; color:#fff; border:none; border-radius:6px; cursor:pointer; font-size:14px;">
+            Загрузить файл
+        </button>
+    </form>
+</div>
+
+<div class="card">
+    <h2>Импорт JSON</h2>
+    <p class="hint" style="margin-bottom:8px;">
+        Формат: <code>{"1": {"title": "...", "text": "...", "date": "..."}, ...}</code>
+        Документы добавляются к существующим.
+    </p>
+    <form method="POST" action="{{ url_for('upload_page') }}" enctype="multipart/form-data">
+        <input type="hidden" name="action" value="import_json">
+        <p style="margin-bottom:8px;">
+            <input type="file" name="json_file" accept=".json" required>
+        </p>
+        <button type="submit" style="padding:8px 18px; background:#374151; color:#fff; border:none; border-radius:6px; cursor:pointer; font-size:14px;">
+            Импортировать
+        </button>
+    </form>
+</div>
+
+<div class="card">
+    <h2>Документы в базе ({{ doc_count }})</h2>
+    {% if docs %}
+    <table>
+        <tr><th>ID</th><th>Заголовок</th><th>Дата</th><th></th></tr>
+        {% for id, d in docs.items() %}
+        <tr>
+            <td>{{ id }}</td>
+            <td><a href="{{ url_for('doc_detail', doc_id=id) }}">{{ d.title }}</a></td>
+            <td>{{ d.date }}</td>
+            <td>
+                <form method="POST" action="{{ url_for('upload_page') }}" style="display:inline;"
+                      onsubmit="return confirm('Удалить документ {{ id }}?');">
+                    <input type="hidden" name="action" value="delete">
+                    <input type="hidden" name="doc_id" value="{{ id }}">
+                    <button type="submit" style="font-size:12px; color:#b91c1c; background:none; border:none; cursor:pointer;">удалить</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p class="empty">База пуста</p>
+    {% endif %}
+    <p class="hint" style="margin-top:12px;">
+        SQLite: <code>data/documents.db</code> · JSON-снимок: <code>data/documents.json</code>
+    </p>
+</div>
+{% endblock %}
