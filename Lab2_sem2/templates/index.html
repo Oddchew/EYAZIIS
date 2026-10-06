@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Главная — Определение языка{% endblock %}
+{% block content %}
+<h1>Определение языка текста</h1>
+
+<div class="card">
+  <p>
+    Система определяет язык текстового документа (английский / французский)
+    тремя методами: N-грамм, алфавитный и нейросетевой.
+  </p>
+  <p>
+    <a class="btn" href="/detect">Распознать документ</a>
+    &nbsp;
+    <a class="btn" href="/batch">Запустить тест</a>
+  </p>
+</div>
+
+<div class="card">
+  <h3>Статус</h3>
+  {% if ready %}
+    <p class="ok">Модели обучены</p>
+  {% else %}
+    <p class="warn">Модели не обучены</p>
+  {% endif %}
+  {% if train_stats %}
+    <p class="meta">
+      Языки: {{ train_stats.languages | join(', ') }}<br>
+      Время обучения: {{ train_stats.train_time_ms }} мс
+      {% if train_stats.neural %}
+        <br>Точность MLP (train): {{ '%.1f'|format(train_stats.neural.train_accuracy * 100) }}%
+      {% endif %}
+    </p>
+  {% endif %}
+  <p class="meta">Записей в истории: {{ history_count }}</p>
+</div>
+
+<div class="card">
+  <h3>Методы</h3>
+  <ol>
+    <li><b>N-грамм</b> — профиль из частых N-грамм, метрика Out-of-Place</li>
+    <li><b>Алфавитный</b> — частоты символов</li>
+    <li><b>Нейросеть</b> — MLP на частотах букв и n-грамм</li>
+  </ol>
+</div>
+{% endblock %}
