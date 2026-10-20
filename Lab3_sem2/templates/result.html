@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Реферат — {{ result.title }}{% endblock %}
+{% block content %}
+<h1>Реферат: {{ result.title }}</h1>
+<p class="meta">
+  Язык: {{ result.language }} · источник:
+  <a href="/doc/{{ doc.id }}">{{ doc.id }}</a>
+  · предложений: {{ result.stats.sentences }} · выбрано: {{ result.stats.selected }}
+  · токенов: {{ result.stats.tokens }}
+</p>
+<p>
+  <a class="btn" href="/export/{{ doc.id }}">Сохранить JSON</a>
+  <a class="btn" href="javascript:window.print()">Печать</a>
+  <a class="btn" href="/">К списку</a>
+</p>
+
+<div class="card">
+  <h3>1. Классический реферат</h3>
+  <ol>
+    {% for s in result.classical %}
+    <li>{{ s }}</li>
+    {% endfor %}
+  </ol>
+</div>
+
+<div class="card">
+  <h3>2. Ключевые слова</h3>
+  <p>
+    {% for t, w in result.keywords_flat %}
+      <b>{{ t }}</b> ({{ '%.3f'|format(w) }}){% if not loop.last %}; {% endif %}
+    {% endfor %}
+  </p>
+  <h3>Иерархия ключевых слов</h3>
+  <ul>
+    {% for root, children in result.keywords_tree.items() %}
+    <li>
+      <b>{{ root }}</b>
+      {% if children %}
+      <ul>
+        {% for c in children %}
+        <li>{{ c }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+
+<div class="card">
+  <h3>3. Тематические группы</h3>
+  {% for g in result.topic_groups %}
+  <p><b>{{ g.topic }}</b> (предложений: {{ g.count }})</p>
+  <ul>
+    {% for s in g.sentences %}
+    <li>{{ s }}</li>
+    {% endfor %}
+  </ul>
+  {% endfor %}
+</div>
+
+<details class="card">
+  <summary>Веса предложений</summary>
+  <table class="data-table">
+    <tr>
+      <th>#</th><th>Score</th><th>Posd</th><th>Posp</th><th>TF-IDF</th><th>Выбрано</th><th>Текст</th>
+    </tr>
+    {% for s in result.sentence_scores %}
+    <tr class="{% if s.selected %}ok{% endif %}">
+      <td>{{ s.index }}</td>
+      <td>{{ s.score }}</td>
+      <td>{{ s.posd }}</td>
+      <td>{{ s.posp }}</td>
+      <td>{{ s.tfidf }}</td>
+      <td>{% if s.selected %}да{% else %}{% endif %}</td>
+      <td>{{ s.preview }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</details>
+{% endblock %}

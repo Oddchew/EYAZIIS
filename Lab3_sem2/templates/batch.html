@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Пакетный тест — Реферирование{% endblock %}
+{% block content %}
+<h1>Пакетный тест коллекции</h1>
+<table class="data-table">
+  <tr>
+    <th>ID</th>
+    <th>Название</th>
+    <th>Язык</th>
+    <th>Предл. в реферате</th>
+    <th>Ключевых слов</th>
+    <th>Топ слова</th>
+    <th>Первое предложение реферата</th>
+  </tr>
+  {% for r in rows %}
+  <tr>
+    <td><a href="/summarize/{{ r.doc.id }}">{{ r.doc.id }}</a></td>
+    <td>{{ r.doc.title }}</td>
+    <td>{{ r.doc.language }}</td>
+    <td>{{ r.n_sent }}</td>
+    <td>{{ r.n_kw }}</td>
+    <td>{{ r.top_kw }}</td>
+    <td>{{ r.first_sent }}</td>
+  </tr>
+  {% endfor %}
+</table>
+<p class="meta">Для печати используйте Ctrl+P. <a href="/export_all">Экспорт всех рефератов (JSON)</a></p>
+{% endblock %}

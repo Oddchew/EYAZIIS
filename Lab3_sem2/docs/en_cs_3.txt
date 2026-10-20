@@ -1,0 +1,21 @@
+Title: Introduction to Algorithms and Complexity
+Language: english
+Domain: computer science
+ID: en_cs_3
+
+Algorithm design is the process of creating step-by-step procedures to solve computational problems.
+Efficiency is measured using asymptotic notation such as big-O, which describes how running time
+grows with input size. Divide and conquer strategies split a problem into smaller subproblems,
+solve them recursively, and combine the results. Merge sort is a classic example with guaranteed
+n log n performance in the worst case.
+
+Dynamic programming stores solutions to overlapping subproblems to avoid redundant computation.
+It is widely used for optimization tasks including shortest paths and sequence alignment. Greedy
+algorithms make locally optimal choices and sometimes yield global optima, as in Huffman coding.
+Graph algorithms support navigation, social network analysis and dependency resolution in software systems.
+
+Computational complexity classifies problems by the resources required to solve them. The classes
+P and NP capture a central open question in computer science. NP-complete problems appear in
+scheduling, routing and verification. Approximation algorithms and heuristics provide practical
+solutions when exact methods are infeasible. Understanding complexity helps engineers choose
+appropriate methods for real-world constraints on time and memory.

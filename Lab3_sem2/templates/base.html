@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Реферирование документов{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="topbar">
+    <span class="brand"><a href="/">Реферирование</a></span>
+    <nav>
+      <a href="/" class="{% if active == 'home' %}active{% endif %}">Документы</a>
+      <a href="/upload" class="{% if active == 'upload' %}active{% endif %}">Загрузить</a>
+      <a href="/batch" class="{% if active == 'batch' %}active{% endif %}">Пакетный тест</a>
+      <a href="/history" class="{% if active == 'history' %}active{% endif %}">История</a>
+      <a href="/help" class="{% if active == 'help' %}active{% endif %}">Справка</a>
+      <a href="/export_all">Экспорт</a>
+    </nav>
+  </div>
+  <div class="container">
+    {% block content %}{% endblock %}
+  </div>
+  <div class="footer">Система автоматического реферирования документов</div>
+</body>
+</html>

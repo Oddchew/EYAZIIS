@@ -1,0 +1,34 @@
+Title: Neural Networks and Deep Learning
+Language: english
+Domain: computer science
+ID: en_cs_1
+
+Neural networks are computing systems inspired by biological neural networks.
+A neural network consists of layers of interconnected nodes called neurons.
+Each connection has a weight that is adjusted during learning. Deep learning
+refers to neural networks with many hidden layers. These models have achieved
+remarkable results in computer vision, speech recognition and natural language
+processing.
+
+Training a neural network typically relies on backpropagation and gradient
+descent. The loss function measures the difference between predicted and true
+outputs. Optimization algorithms such as stochastic gradient descent update
+weights iteratively. Regularization techniques including dropout and weight
+decay help prevent overfitting on limited training data.
+
+Convolutional neural networks are particularly effective for image analysis.
+They apply learnable filters across spatial dimensions. Pooling layers reduce
+spatial resolution while retaining important features. Residual connections
+allow very deep architectures to be trained successfully. Transfer learning
+enables reuse of pretrained models on new tasks with smaller datasets.
+
+Recurrent neural networks process sequential data by maintaining a hidden state.
+Long short-term memory units address the vanishing gradient problem. Attention
+mechanisms and transformers have largely replaced recurrent models for many
+sequence tasks. Large language models based on transformers demonstrate strong
+generalization across diverse language understanding problems.
+
+Practical deployment of deep learning systems requires careful consideration of
+computational cost, data quality and ethical implications. Model compression and
+quantization reduce inference latency on edge devices. Continual learning remains
+an open research challenge when data distributions shift over time.
