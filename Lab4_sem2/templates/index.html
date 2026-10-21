@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Машинный переводчик</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <div class="header-inner">
+        <h1>Машинный переводчик</h1>
+        <p class="subtitle">Перевод английского текста на русский</p>
+      </div>
+      <nav>
+        <a href="{{ url_for('index') }}" class="nav-link active">Перевод</a>
+        <a href="{{ url_for('dictionary_page') }}" class="nav-link">Словарь</a>
+      </nav>
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-area">
+          {% for cat, msg in messages %}
+            <div class="flash flash-{{ cat }}">{{ msg }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <main>
+      <form method="post" class="card">
+        <label for="text" class="label">Исходный текст (английский)</label>
+        <textarea id="text" name="text" rows="6" placeholder="Введите текст на английском языке">{{ text }}</textarea>
+
+        <div class="btn-row">
+          <button type="submit" name="action" value="translate" class="btn btn-primary">Перевести</button>
+          <button type="submit" name="action" value="example" class="btn btn-ghost">Пример текста</button>
+          <button type="submit" name="action" value="clear" class="btn btn-ghost">Очистить</button>
+          {% if result %}
+            <a href="{{ url_for('download') }}" class="btn btn-secondary">Скачать .txt</a>
+          {% endif %}
+        </div>
+      </form>
+
+      {% if result %}
+        <section class="card result-card">
+          <div class="stats">
+            <span>Слов: <strong>{{ result.total }}</strong></span>
+            <span>Переведено: <strong>{{ result.translated }}</strong></span>
+            <span>Не найдено: <strong>{{ result.not_found }}</strong></span>
+          </div>
+
+          <h2 class="section-title">Перевод</h2>
+          <div class="translation-box">{{ result.translation }}</div>
+        </section>
+
+        <section class="card">
+          <div class="tabs">
+            <button type="button" class="tab active" data-tab="freq">Частотный список</button>
+            <button type="button" class="tab" data-tab="tree">Синтаксическое дерево</button>
+          </div>
+
+          <div id="panel-freq" class="tab-panel active">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Слово (EN)</th>
+                    <th>Перевод (RU)</th>
+                    <th>Тег</th>
+                    <th>Часть речи</th>
+                    <th>Частота</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for row in result.freq_rows %}
+                  <tr>
+                    <td>{{ row.word }}</td>
+                    <td>{{ row.ru }}</td>
+                    <td class="mono">{{ row.pos }}</td>
+                    <td>{{ row.pos_ru }}</td>
+                    <td class="center">{{ row.freq }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="panel-tree" class="tab-panel">
+            <div class="tree-controls">
+              <label for="sentence">Предложение:</label>
+              <select id="sentence">
+                {% for s in result.sentences %}
+                  <option value="{{ s }}">{{ s[:90] }}{% if s|length > 90 %}…{% endif %}</option>
+                {% endfor %}
+              </select>
+              <button type="button" id="btn-tree" class="btn btn-primary btn-sm">Построить дерево</button>
+            </div>
+            <pre id="tree-out" class="tree-out">Нажмите «Построить дерево» для отображения разбора.</pre>
+            <p id="tree-msg" class="tree-msg"></p>
+          </div>
+        </section>
+      {% endif %}
+    </main>
+
+    <footer class="footer">
+      Лабораторная работа №4 — автоматический машинный перевод
+    </footer>
+  </div>
+
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
