@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}История — Реферирование{% endblock %}
+{% block content %}
+<h1>История</h1>
+{% if not history %}
+<div class="card"><p>Пока пусто.</p></div>
+{% else %}
+<table class="data-table">
+  <tr>
+    <th>Время</th>
+    <th>Источник</th>
+    <th>Название</th>
+    <th>Язык</th>
+    <th>Предложений</th>
+    <th>Ключевых слов</th>
+  </tr>
+  {% for h in history %}
+  <tr>
+    <td>{{ h.ts }}</td>
+    <td>{{ h.source }}</td>
+    <td>{{ h.title }}</td>
+    <td>{{ h.language }}</td>
+    <td>{{ h.n_sent }}</td>
+    <td>{{ h.n_kw }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endif %}
+{% endblock %}

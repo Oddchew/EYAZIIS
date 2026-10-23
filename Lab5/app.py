@@ -26,27 +26,38 @@ if not GOOGLE_API_KEY:
 
 HISTORY_FILE = "chat_history.json"
 
-# ─────────────────────────────────────────────
-#  In-memory Gemini conversation context
-#  (per session, stored by session_id)
-# ─────────────────────────────────────────────
-gemini_contexts: dict[str, list] = {}   # session_id -> list of {role, parts}
+gemini_contexts: dict[str, list] = {}  
 
-# ─────────────────────────────────────────────
-#  NLTK / NLP utilities
-# ─────────────────────────────────────────────
 try:
     RUSSIAN_STOPWORDS = set(stopwords.words('russian'))
 except LookupError:
     RUSSIAN_STOPWORDS = set()
 
 GREETING_WORDS = {
-    'привет', 'здравствуй', 'здравствуйте', 'добрый', 'доброе',
-    'доброго', 'хай', 'хэй', 'приветствую', 'салют'
+    'здравствуйте', 'здравствуй', 'приветствую', 'салют',
+    'добрый день', 'доброе утро', 'добрый вечер',
+    'добрый', 'доброе', 'доброго', 'здравия желаю', 'здравия',
+    
+    'привет', 'здарова', 'дарова', 'здорово', 'здорова', 'здаров',
+    'здрасьте', 'здрасте', 'ку', 'куку', 'хай', 'хэй', 'хайя',
+    'хелло', 'хеллоу', 'йо', 'йоу',
+    
+    'приветик', 'приветочки', 'приветос', 'здаровчик',
+    'хэйло'
 }
+
 HELP_WORDS = {
-    'помощь', 'помоги', 'помогите', 'справка', 'умеешь',
-    'можешь', 'команды', 'функции', 'возможности'
+    'помощь', 'помоги', 'помогите', 'справка', 'подсказка',
+    'поддержка', 'консультация', 'инструкция', 'руководство',
+    'гайд', 'мануал', 'faq', 'фак', 'документация', 'документация',
+    
+    'умеешь', 'можешь', 'команды', 'функции', 'возможности',
+    'навыки', 'фичи', 'опции', 'модули', 'что умеешь', 'что можешь',
+    'как работать', 'как пользоваться', 'как начать', 'с чего начать',
+    
+    'хелп', 'хэлп', 'хэлпа', 'хелпа', 'подскажи', 'объясни', 'покажи', 'расскажи', 'научи',
+    'помоги пж', 'плиз', 'плз', 'что делать', 'куда жать', 'как спросить',
+    'че умеешь', 'чё умеешь', 'что ты можешь', 'как тебя юзать', 'как включить'
 }
 TRANSPORT_KEYWORDS = {
     'машина', 'автомобиль', 'авто', 'автобус', 'поезд', 'самолет', 'самолёт',
@@ -84,7 +95,6 @@ HELP_TEXT = """🚌 <strong>Транспортный Помощник — Спр
 
 <strong>Управление историей:</strong>
 <ul>
-  <li>Нажмите <strong>«История»</strong> — для просмотра и загрузки прошлых диалогов</li>
   <li>Нажмите <strong>«Новый чат»</strong> — для начала новой беседы</li>
   <li>Наведите курсор на сообщение — для редактирования его текста</li>
 </ul>"""
@@ -112,15 +122,13 @@ def detect_intent(tokens: list[str]) -> str:
     return 'general'
 
 
-# ─────────────────────────────────────────────
-#  Markdown → HTML
-# ─────────────────────────────────────────────
 def md_to_html(text: str) -> str:
     if not isinstance(text, str):
         text = str(text)
-    text = re.sub(r'^### (.+)$', r'<h3>\1</h3>', text, flags=re.MULTILINE)
-    text = re.sub(r'^## (.+)$',  r'<h2>\1</h2>', text, flags=re.MULTILINE)
-    text = re.sub(r'^# (.+)$',   r'<h1>\1</h1>', text, flags=re.MULTILINE)
+    text = re.sub(r'^#### (.+)$', r'<h4>\1</h4>', text, flags=re.MULTILINE)
+    text = re.sub(r'^### (.+)$',  r'<h3>\1</h3>', text, flags=re.MULTILINE)
+    text = re.sub(r'^## (.+)$',   r'<h2>\1</h2>', text, flags=re.MULTILINE)
+    text = re.sub(r'^# (.+)$',    r'<h1>\1</h1>', text, flags=re.MULTILINE)
     text = re.sub(r'^---$', '<hr>', text, flags=re.MULTILINE)
 
     def replace_list(m):
@@ -138,9 +146,6 @@ def md_to_html(text: str) -> str:
     return text
 
 
-# ─────────────────────────────────────────────
-#  Persistent history helpers
-# ─────────────────────────────────────────────
 def load_all_sessions() -> dict:
     if os.path.exists(HISTORY_FILE):
         try:
@@ -168,9 +173,21 @@ def record_exchange(session_id: str, user_msg: str, bot_reply: str, ts: str) -> 
     persist(data)
 
 
-# ─────────────────────────────────────────────
-#  Routes
-# ─────────────────────────────────────────────
+def render_session_for_frontend(session_data: dict) -> dict:
+    """Return a copy of session data with bot messages converted to HTML."""
+    rendered = {**session_data, 'messages': []}
+    for msg in session_data.get('messages', []):
+        if msg.get('role') == 'assistant':
+            # Convert markdown to HTML for bot replies
+            rendered['messages'].append({
+                **msg,
+                'content': md_to_html(msg['content'])
+            })
+        else:
+            rendered['messages'].append(msg)
+    return rendered
+
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -202,8 +219,6 @@ def chat():
     if intent == 'help' and len(filtered) <= 3:
         record_exchange(session_id, user_msg, '[справка]', ts)
         return jsonify({'reply': HELP_TEXT, 'intent': 'help'})
-
-    # ── Call Gemini with multi-turn context ─────
     try:
         client = genai.Client(
             api_key=GOOGLE_API_KEY,
@@ -218,7 +233,6 @@ def chat():
             "Отвечай на русском языке. Используй Markdown для форматирования."
         )
 
-        # Maintain rolling context (last 10 turns)
         ctx = gemini_contexts.setdefault(session_id, [])
         ctx.append({'role': 'user', 'parts': [{'text': user_msg}]})
         contents = ctx[-10:]
@@ -241,7 +255,6 @@ def chat():
         return jsonify({'error': f'Ошибка при обращении к модели: {exc}'}), 500
 
 
-# ── Session management endpoints ──────────────
 @app.route('/api/sessions', methods=['GET'])
 def get_sessions():
     data = load_all_sessions()
@@ -268,7 +281,9 @@ def get_session(session_id):
     data = load_all_sessions()
     if session_id not in data:
         return jsonify({'error': 'Сессия не найдена'}), 404
-    return jsonify(data[session_id])
+    
+    session = render_session_for_frontend(data[session_id])
+    return jsonify(session)
 
 
 @app.route('/api/sessions/<session_id>', methods=['DELETE'])

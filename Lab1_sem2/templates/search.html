@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block title %}Поиск{% endblock %}
+{% block content %}
+<div class="card">
+    <form method="GET" action="{{ url_for('search') }}" id="search-form" autocomplete="off">
+        <div class="search-row">
+            <div class="suggest-wrap">
+                <input type="text" name="q" id="q-input" value="{{ query }}"
+                       placeholder="Boolean-запрос..." autofocus>
+                <ul id="suggest-list" class="suggest-list" hidden></ul>
+            </div>
+            <button type="submit">Найти</button>
+        </div>
+    </form>
+    <div class="hint">
+        Операторы: <code>AND</code> <code>OR</code> <code>NOT</code>
+        {% if hints %}
+        &nbsp;·&nbsp; Примеры:
+        {% for h in hints %}
+            <a href="{{ url_for('search', q=h) }}" class="hint-link"><code>{{ h }}</code></a>
+        {% endfor %}
+        {% endif %}
+    </div>
+</div>
+
+{% if query %}
+<div class="card">
+    <div class="count">Найдено: {{ results|length }}</div>
+    {% if results %}
+        {% for r in results %}
+        <div class="result-item">
+            <div class="title">
+                <a href="{{ url_for('doc_detail', doc_id=r.documentId) }}">[{{ r.documentId }}] {{ r.title }}</a>
+            </div>
+            <div class="snippet">{{ r.snippet_html|safe }}</div>
+            <div class="meta">
+                дата: {{ r.date }}
+                {% if r.matched_terms %}
+                &nbsp;·&nbsp; слова запроса в документе:
+                <b>{{ r.matched_terms|join(', ') }}</b>
+                {% endif %}
+            </div>
+            {% if r.weights %}
+            <div class="weights">
+                веса (Q·B):
+                {% for t, w in r.weights.items() %}
+                    {{ t }}={{ w }}{% if not loop.last %}, {% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty">Ничего не найдено</div>
+    {% endif %}
+</div>
+
+{% if related %}
+<div class="card">
+    <h2>Связанные термины</h2>
+    <p class="hint" style="margin-bottom: 8px;">Часто встречаются в тех же документах, что и слова запроса</p>
+    <div class="related">
+        {% for item in related %}
+        <a class="tag" href="{{ url_for('search', q=query + ' OR ' + item.term) }}">
+            {{ item.term }} <span class="tag-n">{{ item.docs }}</span>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endif %}
+
+<script>
+(function () {
+    const input = document.getElementById('q-input');
+    const list = document.getElementById('suggest-list');
+    if (!input || !list) return;
+
+    let timer = null;
+
+    input.addEventListener('input', function () {
+        clearTimeout(timer);
+        const val = input.value;
+        // подсказка по последнему слову
+        const parts = val.split(/\s+/);
+        const last = parts[parts.length - 1] || '';
+        if (last.length < 2 || /^(and|or|not)$/i.test(last)) {
+            list.hidden = true;
+            return;
+        }
+        timer = setTimeout(function () {
+            fetch('/api/suggest?q=' + encodeURIComponent(last))
+                .then(r => r.json())
+                .then(function (items) {
+                    if (!items.length) {
+                        list.hidden = true;
+                        return;
+                    }
+                    list.innerHTML = items.map(function (t) {
+                        return '<li data-term="' + t + '">' + t + '</li>';
+                    }).join('');
+                    list.hidden = false;
+                });
+        }, 150);
+    });
+
+    list.addEventListener('click', function (e) {
+        const li = e.target.closest('li');
+        if (!li) return;
+        const term = li.getAttribute('data-term');
+        const parts = input.value.split(/\s+/);
+        parts[parts.length - 1] = term;
+        input.value = parts.join(' ') + ' ';
+        list.hidden = true;
+        input.focus();
+    });
+
+    document.addEventListener('click', function (e) {
+        if (!e.target.closest('.suggest-wrap')) list.hidden = true;
+    });
+})();
+</script>
+{% endblock %}

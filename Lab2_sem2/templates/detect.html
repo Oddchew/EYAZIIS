@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Распознать — Определение языка{% endblock %}
+{% block content %}
+<h1>Распознавание языка</h1>
+
+{% if error %}
+  <div class="alert error">{{ error }}</div>
+{% endif %}
+
+<form method="post" action="/detect" enctype="multipart/form-data" class="card form">
+  <label>Текст или HTML:</label>
+  <textarea name="text" rows="10" placeholder="Вставьте текст..."></textarea>
+
+  <label>или файл:</label>
+  <input type="file" name="file" accept=".html,.htm,.txt,text/html,text/plain">
+
+  <div class="actions">
+    <button type="submit" {% if not ready %}disabled{% endif %}>Определить язык</button>
+  </div>
+</form>
+
+{% if results %}
+<div class="results">
+  <h2>Результат</h2>
+  <p class="meta">
+    Источник: {{ source_name }} · длина: {{ content_len }} символов
+  </p>
+  <div class="vote-box">
+    Итог (голосование): <b>{{ vote_display }}</b>
+  </div>
+
+  {% for r in results %}
+  <div class="card method-card">
+    <h3>{{ r.method }}</h3>
+    <p>
+      Язык: <b>{{ lang_display.get(r.predicted, r.predicted) }}</b>
+      <span class="meta">({{ r.elapsed_ms }} мс)</span>
+    </p>
+    <table class="scores">
+      <tr><th>Язык</th><th>Метрика</th></tr>
+      {% for lang, val in r.distances_or_probs.items() %}
+      <tr class="{% if lang == r.predicted %}best{% endif %}">
+        <td>{{ lang_display.get(lang, lang) }}</td>
+        <td>{{ val }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% if r.details.get('top_ngrams') %}
+    <details>
+      <summary>Топ N-грамм</summary>
+      <ul class="ngrams">
+        {% for g, c in r.details.top_ngrams %}
+          <li>{{ g }} ({{ c }})</li>
+        {% endfor %}
+      </ul>
+    </details>
+    {% endif %}
+    {% if r.details.get('top_chars') %}
+    <details>
+      <summary>Топ символов</summary>
+      <ul class="ngrams">
+        {% for ch, f in r.details.top_chars %}
+          <li>{{ ch }} {{ '%.3f'|format(f) }}</li>
+        {% endfor %}
+      </ul>
+    </details>
+    {% endif %}
+  </div>
+  {% endfor %}
+
+  <div class="card">
+    <h3>Фрагмент текста</h3>
+    <pre class="preview">{{ preview }}</pre>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

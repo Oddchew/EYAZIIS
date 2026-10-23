@@ -1,0 +1,27 @@
+Title: Distributed Systems Overview
+Language: english
+Domain: computer science
+ID: en_cs_2
+
+A distributed system is a collection of independent computers that appears to
+its users as a single coherent system. Nodes communicate by exchanging messages
+over a network. Key challenges include concurrency, partial failures and the
+absence of a global clock. Designers must reason carefully about consistency,
+availability and partition tolerance.
+
+Replication improves fault tolerance and read scalability. Consistency models
+range from strong linearizability to eventual consistency. Consensus protocols
+such as Paxos and Raft allow a group of nodes to agree on a shared state despite
+failures. Leader election and log replication are central building blocks of
+modern coordination services.
+
+Sharding partitions data across machines to handle large volumes. Load balancing
+distributes requests to avoid hotspots. Caching reduces latency for frequently
+accessed objects. Observability through metrics, logs and traces is essential
+for operating large production systems. Security considerations include mutual
+authentication, encryption in transit and access control.
+
+Cloud platforms provide elastic resources for distributed applications. Microservices
+architectures decompose systems into independently deployable components. Service
+meshes manage traffic routing and policy enforcement. Understanding fundamental
+distributed systems principles remains critical even as tooling evolves rapidly.

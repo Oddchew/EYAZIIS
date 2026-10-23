@@ -1,0 +1,21 @@
+Title: Introduction aux algorithmes et à la complexité
+Language: french
+Domain: computer science
+ID: fr_cs_3
+
+La conception d'algorithmes consiste à créer des procédures pas à pas pour résoudre des problèmes
+informatiques. L'efficacité se mesure à l'aide de notations asymptotiques telles que le grand O,
+qui décrivent comment le temps d'exécution croît avec la taille de l'entrée. Les stratégies de
+diviser pour régner découpent un problème en sous-problèmes, les résolvent récursivement, puis
+combinent les résultats. Le tri fusion est un exemple classique avec une performance n log n.
+
+La programmation dynamique mémorise les solutions de sous-problèmes chevauchants pour éviter des
+calculs redondants. Elle est largement utilisée pour l'optimisation, y compris les plus courts
+chemins et l'alignement de séquences. Les algorithmes gloutons font des choix localement optimaux.
+Les algorithmes de graphes soutiennent la navigation et l'analyse de réseaux.
+
+La complexité calculatoire classe les problèmes selon les ressources nécessaires. Les classes P et
+NP capturent une question ouverte centrale. Les problèmes NP-complets apparaissent dans la
+planification et le routage. Les algorithmes d'approximation fournissent des solutions pratiques
+lorsque les méthodes exactes sont irréalisables. Comprendre la complexité aide à choisir des
+méthodes adaptées aux contraintes de temps et de mémoire.

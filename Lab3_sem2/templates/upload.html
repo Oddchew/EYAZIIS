@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Загрузка — Реферирование{% endblock %}
+{% block content %}
+<h1>Загрузить документ</h1>
+{% if error %}
+<div class="alert error">{{ error }}</div>
+{% endif %}
+<form method="post" action="/upload" enctype="multipart/form-data" class="card form">
+  <label>Заголовок:</label>
+  <input type="text" name="title" value="document">
+  <label>Язык (english / french):</label>
+  <input type="text" name="language" value="english">
+  <label>Текст:</label>
+  <textarea name="text" rows="12" placeholder="Вставьте текст документа..."></textarea>
+  <label>или файл:</label>
+  <input type="file" name="file" accept=".txt,.html,.htm,text/plain,text/html">
+  <div class="actions">
+    <button type="submit">Построить реферат</button>
+  </div>
+</form>
+{% endblock %}

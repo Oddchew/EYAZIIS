@@ -1,0 +1,33 @@
+Title: Réseaux de neurones et apprentissage profond
+Language: french
+Domain: computer science
+ID: fr_cs_1
+
+Les réseaux de neurones sont des systèmes de calcul inspirés des réseaux
+neuronaux biologiques. Un réseau de neurones est composé de couches de nœuds
+interconnectés appelés neurones. Chaque connexion possède un poids ajusté
+pendant l'apprentissage. L'apprentissage profond désigne les réseaux de neurones
+comportant de nombreuses couches cachées. Ces modèles ont obtenu des résultats
+remarquables en vision par ordinateur, en reconnaissance vocale et en traitement
+du langage naturel.
+
+L'entraînement d'un réseau de neurones s'appuie généralement sur la rétropropagation
+et la descente de gradient. La fonction de perte mesure l'écart entre les sorties
+prédites et les sorties réelles. Les algorithmes d'optimisation tels que la
+descente de gradient stochastique mettent à jour les poids de manière itérative.
+Les techniques de régularisation, notamment le dropout, aident à éviter le
+surapprentissage sur des données limitées.
+
+Les réseaux de neurones convolutifs sont particulièrement efficaces pour l'analyse
+d'images. Ils appliquent des filtres apprenables sur les dimensions spatiales.
+Les couches de pooling réduisent la résolution tout en conservant les
+caractéristiques importantes. Les connexions résiduelles permettent d'entraîner
+des architectures très profondes. L'apprentissage par transfert réutilise des
+modèles préentraînés sur de nouvelles tâches.
+
+Les réseaux de neurones récurrents traitent des données séquentielles en
+maintenant un état caché. Les mécanismes d'attention et les transformeurs ont
+largement remplacé les modèles récurrents pour de nombreuses tâches. Les grands
+modèles de langage fondés sur les transformeurs montrent une forte capacité de
+généralisation. Le déploiement pratique exige de prendre en compte le coût de
+calcul, la qualité des données et les implications éthiques.

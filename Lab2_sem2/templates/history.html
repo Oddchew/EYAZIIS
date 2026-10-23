@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}История — Определение языка{% endblock %}
+{% block content %}
+<h1>История</h1>
+<p class="meta">Записей: {{ history | length }}. <a href="/export">Экспорт JSON</a></p>
+
+{% if not history %}
+  <div class="card"><p>Пока пусто.</p></div>
+{% else %}
+<table class="data-table">
+  <tr>
+    <th>Время</th>
+    <th>Источник</th>
+    <th>Фрагмент</th>
+    <th>Итог</th>
+    <th>N-грамм</th>
+    <th>Алфавит</th>
+    <th>Нейросеть</th>
+  </tr>
+  {% for h in history %}
+  <tr>
+    <td>{{ h.ts }}</td>
+    <td>{{ h.source }}</td>
+    <td class="preview-cell">{{ h.preview }}</td>
+    <td>{{ h.vote }}</td>
+    {% for m in ['N-грамм (Out-of-Place)', 'Алфавитный', 'Нейросетевой (MLP)'] %}
+    <td>
+      {% if h.methods.get(m) %}
+        {{ h.methods[m].predicted }}
+        <small>{{ h.methods[m].ms }} мс</small>
+      {% else %}—{% endif %}
+    </td>
+    {% endfor %}
+  </tr>
+  {% endfor %}
+</table>
+{% endif %}
+{% endblock %}

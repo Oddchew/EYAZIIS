@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Словарь — машинный переводчик</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <div class="header-inner">
+        <h1>Словарь</h1>
+        <p class="subtitle">Пополнение и корректировка словаря ({{ entries|length }} записей)</p>
+      </div>
+      <nav>
+        <a href="{{ url_for('index') }}" class="nav-link">Перевод</a>
+        <a href="{{ url_for('dictionary_page') }}" class="nav-link active">Словарь</a>
+      </nav>
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-area">
+          {% for cat, msg in messages %}
+            <div class="flash flash-{{ cat }}">{{ msg }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <main>
+      <section class="card">
+        <h2 class="section-title">Добавить слово</h2>
+        <form method="post" class="dict-form">
+          <input type="hidden" name="action" value="add">
+          <div class="form-row">
+            <div class="field">
+              <label>Английское</label>
+              <input type="text" name="en" placeholder="fever" required>
+            </div>
+            <div class="field">
+              <label>Русский перевод</label>
+              <input type="text" name="ru" placeholder="лихорадка" required>
+            </div>
+            <div class="field field-sm">
+              <label>Тег POS</label>
+              <input type="text" name="pos" placeholder="NN">
+            </div>
+            <button type="submit" class="btn btn-primary">Добавить</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2 class="section-title">Все записи</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Английское</th>
+                <th>Русский</th>
+                <th>Тег</th>
+                <th>Использований</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for en, ru, pos, freq in entries %}
+              <tr>
+                <td>{{ en }}</td>
+                <td>{{ ru }}</td>
+                <td class="mono">{{ pos or "—" }}</td>
+                <td class="center">{{ freq }}</td>
+                <td class="actions">
+                  <form method="post" class="inline-form" onsubmit="return editRow(this, '{{ en }}', '{{ ru|e }}', '{{ pos or '' }}')">
+                    <input type="hidden" name="action" value="edit">
+                    <input type="hidden" name="en" value="{{ en }}">
+                    <input type="hidden" name="ru" value="{{ ru }}">
+                    <input type="hidden" name="pos" value="{{ pos or '' }}">
+                    <button type="submit" class="link-btn">править</button>
+                  </form>
+                  <form method="post" class="inline-form" onsubmit="return confirm('Удалить «{{ en }}»?')">
+                    <input type="hidden" name="action" value="delete">
+                    <input type="hidden" name="en" value="{{ en }}">
+                    <button type="submit" class="link-btn danger">удалить</button>
+                  </form>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      Лабораторная работа №4 — автоматический машинный перевод
+    </footer>
+  </div>
+
+  <script>
+    function editRow(form, en, ru, pos) {
+      const newRu = prompt("Новый перевод для «" + en + "»:", ru);
+      if (newRu === null) return false;
+      const newPos = prompt("Тег POS:", pos);
+      if (newPos === null) return false;
+      form.querySelector('[name="ru"]').value = newRu;
+      form.querySelector('[name="pos"]').value = newPos;
+      return true;
+    }
+  </script>
+</body>
+</html>

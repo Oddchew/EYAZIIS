@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Тест — Определение языка{% endblock %}
+{% block content %}
+<h1>Тестирование</h1>
+<p>Тестовая коллекция: {{ summary.n }} документов.</p>
+
+<div class="card">
+  <p>
+    <b>Голосование:</b> {{ summary.vote_acc }}%<br>
+    {% for m, s in summary.methods.items() %}
+      <b>{{ m }}:</b> {{ s.acc }}% (ср. {{ s.avg_ms }} мс)<br>
+    {% endfor %}
+  </p>
+</div>
+
+<table class="data-table">
+  <tr>
+    <th>#</th>
+    <th>Документ</th>
+    <th>Истина</th>
+    <th>N-грамм</th>
+    <th>Алфавитный</th>
+    <th>Нейросеть</th>
+    <th>Итог</th>
+  </tr>
+  {% for row in rows %}
+  <tr>
+    <td>{{ row.id }}</td>
+    <td>{{ row.title }}</td>
+    <td>{{ row.true }}</td>
+    {% for m in ['N-грамм (Out-of-Place)', 'Алфавитный', 'Нейросетевой (MLP)'] %}
+    <td class="{% if row.methods[m].ok %}ok{% else %}bad{% endif %}">
+      {{ row.methods[m].pred }}
+      <small>{{ row.methods[m].ms }} мс</small>
+    </td>
+    {% endfor %}
+    <td class="{% if row.ok %}ok{% else %}bad{% endif %}">
+      <b>{{ row.vote }}</b>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

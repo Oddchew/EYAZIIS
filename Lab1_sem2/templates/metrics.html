@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Метрики{% endblock %}
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <h2>Метрики качества (ROMIP)</h2>
+    <table>
+        <tr>
+            <th>Запрос</th>
+            <th>P</th>
+            <th>R</th>
+            <th>F1</th>
+            <th>P@5</th>
+            <th>P@10</th>
+            <th>AP</th>
+            <th>R-P</th>
+        </tr>
+        {% for m in metrics %}
+        <tr>
+            <td>{{ m.query[:38] }}{% if m.query|length > 38 %}…{% endif %}</td>
+            <td>{{ '%.3f'|format(m.precision) }}</td>
+            <td>{{ '%.3f'|format(m.recall) }}</td>
+            <td>{{ '%.3f'|format(m.f_measure) }}</td>
+            <td>{{ '%.3f'|format(m.precision_at_5) }}</td>
+            <td>{{ '%.3f'|format(m.precision_at_10) }}</td>
+            <td>{{ '%.3f'|format(m.average_precision) }}</td>
+            <td>{{ '%.3f'|format(m.r_precision) }}</td>
+        </tr>
+        {% endfor %}
+        <tr class="avg-row">
+            <td>Среднее</td>
+            <td>{{ '%.3f'|format(avg_p) }}</td>
+            <td>{{ '%.3f'|format(avg_r) }}</td>
+            <td>{{ '%.3f'|format(avg_f) }}</td>
+            <td>—</td>
+            <td>—</td>
+            <td>{{ '%.3f'|format(avg_ap) }}</td>
+            <td>—</td>
+        </tr>
+    </table>
+    <div class="legend">
+        <b>P</b> — precision &nbsp;
+        <b>R</b> — recall &nbsp;
+        <b>F1</b> — F-measure &nbsp;
+        <b>AP</b> — average precision &nbsp;
+        <b>R-P</b> — R-precision
+    </div>
+</div>
+
+<div class="card">
+    <h2>Графики</h2>
+    <div class="chart-wrap">
+        <canvas id="prChart" height="120"></canvas>
+    </div>
+    <div class="chart-wrap" style="margin-top: 24px;">
+        <canvas id="avgChart" height="80"></canvas>
+    </div>
+</div>
+
+<script>
+const labels = {{ labels|tojson }};
+const precision = {{ precision_vals|tojson }};
+const recall = {{ recall_vals|tojson }};
+const f1 = {{ f1_vals|tojson }};
+
+new Chart(document.getElementById('prChart'), {
+    type: 'bar',
+    data: {
+        labels: labels,
+        datasets: [
+            { label: 'Precision', data: precision, backgroundColor: 'rgba(55, 65, 81, 0.7)' },
+            { label: 'Recall', data: recall, backgroundColor: 'rgba(107, 114, 128, 0.5)' },
+            { label: 'F1', data: f1, backgroundColor: 'rgba(156, 163, 175, 0.5)' }
+        ]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { position: 'top' } },
+        scales: {
+            y: { beginAtZero: true, max: 1.05 },
+            x: { ticks: { maxRotation: 45, minRotation: 25, font: { size: 10 } } }
+        }
+    }
+});
+
+new Chart(document.getElementById('avgChart'), {
+    type: 'bar',
+    data: {
+        labels: ['Precision', 'Recall', 'F1', 'MAP'],
+        datasets: [{
+            label: 'Средние значения',
+            data: [{{ avg_p }}, {{ avg_r }}, {{ avg_f }}, {{ avg_ap }}],
+            backgroundColor: ['#374151', '#6b7280', '#9ca3af', '#d1d5db']
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, max: 1.05 } }
+    }
+});
+</script>
+{% endblock %}

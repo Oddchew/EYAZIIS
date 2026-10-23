@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Определение языка текста{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="topbar">
+    <span class="brand"><a href="/">Определение языка</a></span>
+    <nav>
+      <a href="/" class="{% if active == 'home' %}active{% endif %}">Главная</a>
+      <a href="/detect" class="{% if active == 'detect' %}active{% endif %}">Распознать</a>
+      <a href="/batch" class="{% if active == 'batch' %}active{% endif %}">Тест</a>
+      <a href="/train" class="{% if active == 'train' %}active{% endif %}">Обучение</a>
+      <a href="/history" class="{% if active == 'history' %}active{% endif %}">История</a>
+      <a href="/help" class="{% if active == 'help' %}active{% endif %}">Справка</a>
+      <a href="/export">Экспорт</a>
+    </nav>
+  </div>
+  <div class="container">
+    {% block content %}{% endblock %}
+  </div>
+  <div class="footer">Система определения языка текста</div>
+</body>
+</html>
